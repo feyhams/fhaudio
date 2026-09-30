@@ -68,6 +68,28 @@ function initSettingsModule() {
     });
   }
 
+  // Tutorial User vs Group Tab Switching
+  const btnTutorTabUser = document.getElementById('btnTutorTabUser');
+  const btnTutorTabGroup = document.getElementById('btnTutorTabGroup');
+  const panelTutorUser = document.getElementById('panelTutorUser');
+  const panelTutorGroup = document.getElementById('panelTutorGroup');
+
+  if (btnTutorTabUser && btnTutorTabGroup && panelTutorUser && panelTutorGroup) {
+    btnTutorTabUser.addEventListener('click', () => {
+      btnTutorTabUser.classList.add('active');
+      btnTutorTabGroup.classList.remove('active');
+      panelTutorUser.style.display = 'block';
+      panelTutorGroup.style.display = 'none';
+    });
+
+    btnTutorTabGroup.addEventListener('click', () => {
+      btnTutorTabGroup.classList.add('active');
+      btnTutorTabUser.classList.remove('active');
+      panelTutorGroup.style.display = 'block';
+      panelTutorUser.style.display = 'none';
+    });
+  }
+
   // Render accounts list in settings
   function renderAccountsList() {
     if (!accountsList) return;

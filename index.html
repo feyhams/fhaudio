@@ -696,8 +696,8 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
           <div id="apiTutorialBox" class="api-tutorial-box" style="display: none;">
             <div class="api-tutorial-header">
               <div class="api-tutorial-title-row">
-                <span class="api-tutorial-badge">PANDUAN RESMI</span>
-                <h4 class="api-tutorial-title">Cara Mendapatkan Roblox Open Cloud API Key (100% Gratis)</h4>
+                <span class="api-tutorial-badge">PANDUAN RESMI TERBARU</span>
+                <h4 class="api-tutorial-title">Cara Membuat Roblox Open Cloud API Key (User &amp; Group)</h4>
               </div>
               <div class="api-tutorial-header-actions">
                 <a href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noopener noreferrer" class="btn-open-roblox-hub" title="Buka Roblox Creator Hub di tab baru">
@@ -708,45 +708,136 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
               </div>
             </div>
 
-            <div class="api-tutorial-steps">
-              <div class="api-step-item">
-                <div class="api-step-num">1</div>
-                <div class="api-step-content">
-                  <div class="api-step-heading">Buka Halaman Credentials</div>
-                  <div class="api-step-desc">Login ke akun Roblox Anda dan buka <b>create.roblox.com/dashboard/credentials</b>, lalu klik tombol biru <b>"Create API Key"</b> di kanan atas.</div>
-                </div>
-              </div>
+            <!-- Tab Switcher User vs Group -->
+            <div class="api-tutorial-tabs-row">
+              <button type="button" id="btnTutorTabUser" class="tutor-type-pill active">
+                <span>👤 Akun Pribadi (User ID)</span>
+              </button>
+              <button type="button" id="btnTutorTabGroup" class="tutor-type-pill">
+                <span>👥 Akun Group / Studio (Group ID)</span>
+              </button>
+            </div>
 
-              <div class="api-step-item">
-                <div class="api-step-num">2</div>
-                <div class="api-step-content">
-                  <div class="api-step-heading">Beri Nama &amp; Pilih Creator</div>
-                  <div class="api-step-desc">Ketik nama bebas (contoh: <code>FH Audio Uploader</code>). Di kolom <b>Creator</b>, pilih akun User Anda atau Group tempat lagu akan diupload.</div>
+            <!-- Panel 1: Akun Pribadi (User) -->
+            <div id="panelTutorUser" class="tutor-tab-panel">
+              <div class="api-tutorial-steps">
+                <div class="api-step-item">
+                  <div class="api-step-num">1</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Buka Halaman Credentials</div>
+                    <div class="api-step-desc">Login ke akun Roblox Anda dan buka <b>create.roblox.com/dashboard/credentials</b>. Di <b>pojok kiri atas dashboard</b>, pastikan akun pribadi Anda yang terpilih.</div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="api-step-item highlight">
-                <div class="api-step-num highlight">3</div>
-                <div class="api-step-content">
-                  <div class="api-step-heading">Pilih Izin Assets (Wajib)</div>
-                  <div class="api-step-desc">
-                    Di bagian <b>Access Permissions</b>, klik <b>"Add API System"</b> ➔ pilih <b>Assets</b>. Centang kedua izin berikut:
-                    <div class="api-perm-pills">
-                      <span class="perm-pill">✓ asset:read</span>
-                      <span class="perm-pill">✓ asset:write</span>
+                <div class="api-step-item">
+                  <div class="api-step-num">2</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Klik "Create API Key"</div>
+                    <div class="api-step-desc">Klik tombol biru <b>"Create API Key"</b> di kanan atas. Isi kolom <b>Name</b> bebas (contoh: <code>FH Audio User</code>).</div>
+                  </div>
+                </div>
+
+                <div class="api-step-item highlight">
+                  <div class="api-step-num highlight">3</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Izin Assets (Wajib)</div>
+                    <div class="api-step-desc">
+                      Di <b>Access Permissions</b>, klik <b>"Add API System"</b> ➔ pilih <b>Assets</b>. Centang kedua izin berikut:
+                      <div class="api-perm-pills">
+                        <span class="perm-pill">✓ asset:read</span>
+                        <span class="perm-pill">✓ asset:write</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="api-step-item">
+                  <div class="api-step-num">4</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">IP Security &amp; Simpan</div>
+                    <div class="api-step-desc">
+                      Di <b>Security / IP Restrictions</b>, pilih <b>No IP Restrictions</b> (atau masukkan <code>0.0.0.0/0</code>). Klik <b>"Save &amp; Generate Key"</b> lalu salin API Key Anda.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="api-step-item">
+                  <div class="api-step-num">5</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Simpan ke FH Audio</div>
+                    <div class="api-step-desc">
+                      Buka profil Roblox Anda (<code>roblox.com/users/<b>[ID]</b>/profile</code>) untuk menyalin User ID Anda. Klik <b>+ Add account</b> ➔ pilih <b>User ID</b> ➔ paste ID &amp; API Key!
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="api-step-item">
-                <div class="api-step-num">4</div>
-                <div class="api-step-content">
-                  <div class="api-step-heading">IP Security &amp; Simpan</div>
-                  <div class="api-step-desc">
-                    Di <b>Security / IP Restrictions</b>, pilih <b>No IP Restrictions</b> (atau masukkan <code>0.0.0.0/0</code>) agar bisa diakses dari web/Vercel. Klik <b>"Save &amp; Generate Key"</b>, salin kodenya, lalu klik tombol <b>+ Add account</b> di atas!
+            <!-- Panel 2: Akun Group / Studio -->
+            <div id="panelTutorGroup" class="tutor-tab-panel" style="display: none;">
+              <div class="api-tutorial-steps">
+                <div class="api-step-item highlight">
+                  <div class="api-step-num highlight">1</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">PILIH GROUP DI KIRI ATAS</div>
+                    <div class="api-step-desc">
+                      Buka <b>create.roblox.com/dashboard/credentials</b>. Di <b>pojok kiri atas dashboard (di atas menu navigasi)</b>, klik dropdown akun Anda ➔ <b>PILIH GROUP ANDA</b>. Halaman akan berganti ke dashboard Group!
+                    </div>
                   </div>
                 </div>
+
+                <div class="api-step-item">
+                  <div class="api-step-num">2</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Klik "Create API Key"</div>
+                    <div class="api-step-desc">Klik tombol biru <b>"Create API Key"</b>. Beri nama bebas (contoh: <code>FH Audio Group</code>). <i>(Catatan: Anda harus Owner Group atau Admin dengan izin Open Cloud)</i>.</div>
+                  </div>
+                </div>
+
+                <div class="api-step-item highlight">
+                  <div class="api-step-num highlight">3</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Izin Assets (Wajib)</div>
+                    <div class="api-step-desc">
+                      Di <b>Access Permissions</b>, klik <b>"Add API System"</b> ➔ pilih <b>Assets</b>. Centang kedua izin:
+                      <div class="api-perm-pills">
+                        <span class="perm-pill">✓ asset:read</span>
+                        <span class="perm-pill">✓ asset:write</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="api-step-item">
+                  <div class="api-step-num">4</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">IP Security &amp; Simpan</div>
+                    <div class="api-step-desc">
+                      Di <b>Security / IP Restrictions</b>, pilih <b>No IP Restrictions</b> (atau masukkan <code>0.0.0.0/0</code>). Klik <b>"Save &amp; Generate Key"</b> lalu salin API Key Group Anda.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="api-step-item">
+                  <div class="api-step-num">5</div>
+                  <div class="api-step-content">
+                    <div class="api-step-heading">Simpan ke FH Audio</div>
+                    <div class="api-step-desc">
+                      Buka halaman Group Anda di Roblox (<code>roblox.com/groups/<b>[ID]</b>/...</code>) untuk melihat Group ID. Klik <b>+ Add account</b> ➔ pilih <b>Group ID</b> ➔ paste ID &amp; API Key!
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Petunjuk ID Cepat -->
+            <div class="api-id-helper-box">
+              <span style="font-size: 1.15rem; line-height: 1;">💡</span>
+              <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <span style="font-weight: 700; color: #f8fafc;">Cara Mengetahui Target ID Anda di Roblox:</span>
+                <span>• <b>User ID:</b> Buka profil Roblox Anda di browser ➔ lihat link URL: <code>roblox.com/users/<b>283131443</b>/profile</code> (angka tersebut adalah User ID).</span>
+                <span>• <b>Group ID:</b> Buka halaman Group Anda di browser ➔ lihat link URL: <code>roblox.com/groups/<b>12345678</b>/Nama-Group</code> (angka tersebut adalah Group ID).</span>
+                <span>• <b>Penting:</b> Pastikan memilih <b>"No IP Restrictions"</b> saat membuat API Key agar pengunggahan audio dari browser/web hosting tidak terblokir firewall IP Roblox.</span>
               </div>
             </div>
           </div>
