@@ -405,156 +405,63 @@ class AudioEngine {
     this.playbackSource = ctx.createBufferSource();
     this.playbackSource.buffer = buffer;
 
-    const mode = options.mode || 'original'; // 'original' | 'bypass' | 'roblox'
-    const speed = parseFloat(options.speed) || 2.3;
-    const ampDb = parseFloat(options.ampDb) || -4;
-    const enableTreble = !!options.enableTreble;
-    const enableLimiter = options.enableLimiter !== false;
-    const enableMetalMode = !!options.enableMetalMode;
+    // Create persistent DSP filter chain for live real-time adjustments
+    this.activeDeHarsh = ctx.createBiquadFilter();
+    this.activeDeHarsh.type = 'peaking';
+    this.activeDeHarsh.frequency.value = 3800;
+    this.activeDeHarsh.Q.value = 1.2;
+    this.activeDeHarsh.gain.value = 0;
 
-    let lastNode = this.playbackSource;
+    this.activeBassPunch = ctx.createBiquadFilter();
+    this.activeBassPunch.type = 'lowshelf';
+    this.activeBassPunch.frequency.value = 90;
+    this.activeBassPunch.gain.value = 0;
 
+    this.activeSmoothing = ctx.createBiquadFilter();
+    this.activeSmoothing.type = 'lowpass';
+    this.activeSmoothing.frequency.value = 22050;
+
+    this.activeTreble = ctx.createBiquadFilter();
+    this.activeTreble.type = 'highshelf';
+    this.activeTreble.frequency.value = 8000;
+    this.activeTreble.gain.value = 0;
+
+    this.activeGain = ctx.createGain();
+    this.activeGain.gain.value = 1.0;
+
+    this.activeCompressor = ctx.createDynamicsCompressor();
+    this.activeCompressor.threshold.value = 0;
+    this.activeCompressor.ratio.value = 20.0;
+    this.activeCompressor.knee.value = 3.0;
+    this.activeCompressor.attack.value = 0.002;
+    this.activeCompressor.release.value = 0.050;
+
+    // Connect chain: source -> deHarsh -> bassPunch -> smoothing -> treble -> gain -> compressor -> destination
     try {
-      if (mode === 'bypass') {
-        // Fast bypass playback with DSP active
-        this.playbackSource.playbackRate.value = speed;
-
-        if (enableMetalMode) {
-          try {
-            // Anti-harsh peaking filter (-2.5 dB @ 3.8 kHz)
-            const deHarsh = ctx.createBiquadFilter();
-            deHarsh.type = 'peaking';
-            deHarsh.frequency.value = 3800;
-            deHarsh.Q.value = 1.2;
-            deHarsh.gain.value = -2.5;
-            lastNode.connect(deHarsh);
-            lastNode = deHarsh;
-
-            // Bass punch low-shelf (+2.0 dB @ 90 Hz)
-            const bassPunch = ctx.createBiquadFilter();
-            bassPunch.type = 'lowshelf';
-            bassPunch.frequency.value = 90;
-            bassPunch.gain.value = 2.0;
-            lastNode.connect(bassPunch);
-            lastNode = bassPunch;
-
-            // Top-end smoothing (12 kHz low-pass)
-            const smoothing = ctx.createBiquadFilter();
-            smoothing.type = 'lowpass';
-            smoothing.frequency.value = 12000;
-            lastNode.connect(smoothing);
-            lastNode = smoothing;
-          } catch (e) {
-            console.warn('Metal mode filters error:', e);
-          }
-        }
-
-        if (enableTreble && !enableMetalMode) {
-          try {
-            const highShelf = ctx.createBiquadFilter();
-            highShelf.type = 'highshelf';
-            highShelf.frequency.value = 8000;
-            highShelf.gain.value = 1.5;
-            lastNode.connect(highShelf);
-            lastNode = highShelf;
-          } catch (e) {
-            console.warn('Treble filter error:', e);
-          }
-        }
-
-        try {
-          const gainNode = ctx.createGain();
-          gainNode.gain.value = Math.pow(10, ampDb / 20);
-          lastNode.connect(gainNode);
-          lastNode = gainNode;
-        } catch (e) {
-          console.warn('Gain node error:', e);
-        }
-
-        if (enableLimiter) {
-          try {
-            const compressor = ctx.createDynamicsCompressor();
-            compressor.threshold.value = -1.5;
-            compressor.ratio.value = 20.0;
-            compressor.knee.value = 3.0;
-            compressor.attack.value = 0.002;
-            compressor.release.value = 0.050;
-            lastNode.connect(compressor);
-            lastNode = compressor;
-          } catch (e) {
-            console.warn('Compressor limiter error:', e);
-          }
-        }
-      } else if (mode === 'roblox') {
-        // In Roblox: Sound.PlaybackSpeed = 1 / speed.
-        this.playbackSource.playbackRate.value = 1.0;
-
-        if (enableMetalMode) {
-          try {
-            const deHarsh = ctx.createBiquadFilter();
-            deHarsh.type = 'peaking';
-            deHarsh.frequency.value = 3800;
-            deHarsh.Q.value = 1.2;
-            deHarsh.gain.value = -2.5;
-            lastNode.connect(deHarsh);
-            lastNode = deHarsh;
-
-            const bassPunch = ctx.createBiquadFilter();
-            bassPunch.type = 'lowshelf';
-            bassPunch.frequency.value = 90;
-            bassPunch.gain.value = 2.0;
-            lastNode.connect(bassPunch);
-            lastNode = bassPunch;
-
-            const smoothing = ctx.createBiquadFilter();
-            smoothing.type = 'lowpass';
-            smoothing.frequency.value = 12000;
-            lastNode.connect(smoothing);
-            lastNode = smoothing;
-          } catch (e) {}
-        }
-
-        if (enableTreble && !enableMetalMode) {
-          try {
-            const highShelf = ctx.createBiquadFilter();
-            highShelf.type = 'highshelf';
-            highShelf.frequency.value = 8000;
-            highShelf.gain.value = 1.5;
-            lastNode.connect(highShelf);
-            lastNode = highShelf;
-          } catch (e) {}
-        }
-
-        if (enableLimiter) {
-          try {
-            const compressor = ctx.createDynamicsCompressor();
-            compressor.threshold.value = -1.5;
-            compressor.ratio.value = 20.0;
-            compressor.knee.value = 3.0;
-            compressor.attack.value = 0.002;
-            compressor.release.value = 0.050;
-            lastNode.connect(compressor);
-            lastNode = compressor;
-          } catch (e) {}
-        }
-      } else {
-        // original: 1.0x pitch/speed flat
-        this.playbackSource.playbackRate.value = 1.0;
-      }
+      this.playbackSource.connect(this.activeDeHarsh);
+      this.activeDeHarsh.connect(this.activeBassPunch);
+      this.activeBassPunch.connect(this.activeSmoothing);
+      this.activeSmoothing.connect(this.activeTreble);
+      this.activeTreble.connect(this.activeGain);
+      this.activeGain.connect(this.activeCompressor);
+      this.activeCompressor.connect(ctx.destination);
     } catch (graphErr) {
       console.warn('DSP graph connection error:', graphErr);
+      try {
+        this.playbackSource.connect(ctx.destination);
+      } catch (e) {}
     }
 
-    lastNode.connect(ctx.destination);
+    // Apply active options to the graph
+    this.applyLiveDSP(options);
 
-    const playbackRate = (this.playbackSource && this.playbackSource.playbackRate) ? (this.playbackSource.playbackRate.value || 1.0) : 1.0;
     const safeStart = Math.max(0, Math.min(buffer.duration - 0.05, isFinite(startSec) ? Number(startSec) : 0));
-    this.playbackStartTime = ctx.currentTime - (safeStart / playbackRate);
+    this.currentTrackPosition = safeStart;
+    this.lastClockTime = ctx.currentTime;
     this.isPlaying = true;
 
     const currentSource = this.playbackSource;
     currentSource.onended = () => {
-      // Guard against old stopped sources firing ended
       if (this.playbackSource !== currentSource) return;
       this.isPlaying = false;
       if (this.animFrameId) {
@@ -575,12 +482,120 @@ class AudioEngine {
 
     const updateLoop = () => {
       if (!this.isPlaying || this.playbackSource !== currentSource) return;
+      const now = ctx.currentTime;
+      const deltaClock = Math.max(0, now - this.lastClockTime);
+      this.lastClockTime = now;
       const rate = (this.playbackSource && this.playbackSource.playbackRate) ? this.playbackSource.playbackRate.value : 1.0;
-      const current = (ctx.currentTime - this.playbackStartTime) * rate;
-      if (typeof onProgress === 'function') onProgress(current);
+      this.currentTrackPosition += deltaClock * rate;
+      if (typeof onProgress === 'function') onProgress(this.currentTrackPosition);
       this.animFrameId = requestAnimationFrame(updateLoop);
     };
     this.animFrameId = requestAnimationFrame(updateLoop);
+  }
+
+  applyLiveDSP(options = {}) {
+    const ctx = this.getAudioContext();
+    const now = ctx.currentTime;
+    const ramp = 0.03; // Smooth 30ms transition to avoid audio clicks
+
+    const mode = options.mode || 'original'; // 'original' | 'bypass' | 'roblox'
+    const speed = parseFloat(options.speed) || 2.3;
+    const ampDb = parseFloat(options.ampDb) || -4;
+    const enableTreble = !!options.enableTreble;
+    const enableLimiter = options.enableLimiter !== false;
+    const enableMetalMode = !!options.enableMetalMode;
+
+    if (mode === 'bypass') {
+      // 1. Sped-up bypass audio (chipmunk sound for upload)
+      if (this.playbackSource && this.playbackSource.playbackRate) {
+        this.playbackSource.playbackRate.setTargetAtTime(speed, now, ramp);
+      }
+
+      // 2. Gain compensation (-4 dB etc.)
+      if (this.activeGain && this.activeGain.gain) {
+        const linearGain = Math.pow(10, ampDb / 20);
+        this.activeGain.gain.setTargetAtTime(linearGain, now, ramp);
+      }
+
+      // 3. Metal Mode (De-harsh, Bass punch, Smoothing)
+      if (enableMetalMode) {
+        if (this.activeDeHarsh) this.activeDeHarsh.gain.setTargetAtTime(-2.5, now, ramp);
+        if (this.activeBassPunch) this.activeBassPunch.gain.setTargetAtTime(2.0, now, ramp);
+        if (this.activeSmoothing) this.activeSmoothing.frequency.setTargetAtTime(12000, now, ramp);
+      } else {
+        if (this.activeDeHarsh) this.activeDeHarsh.gain.setTargetAtTime(0, now, ramp);
+        if (this.activeBassPunch) this.activeBassPunch.gain.setTargetAtTime(0, now, ramp);
+        if (this.activeSmoothing) this.activeSmoothing.frequency.setTargetAtTime(22050, now, ramp);
+      }
+
+      // 4. Treble filter (+1.5 dB @ 8000 Hz)
+      if (enableTreble && !enableMetalMode) {
+        if (this.activeTreble) this.activeTreble.gain.setTargetAtTime(1.5, now, ramp);
+      } else {
+        if (this.activeTreble) this.activeTreble.gain.setTargetAtTime(0, now, ramp);
+      }
+
+      // 5. Headroom limiter
+      if (this.activeCompressor && this.activeCompressor.threshold) {
+        this.activeCompressor.threshold.setTargetAtTime(enableLimiter ? -1.5 : 0, now, ramp);
+      }
+
+    } else if (mode === 'roblox') {
+      // Simulasi Roblox:
+      // Di dalam game Roblox, PlaybackSpeed diatur ke (1 / speed) sehingga tempo kembali ke normal 1.0x,
+      // dan Sound.Volume dikompensasi ke normal.
+      // Suara yang didengar pemain adalah tempo normal yang telah melewati pemrosesan DSP Roblox.
+      if (this.playbackSource && this.playbackSource.playbackRate) {
+        this.playbackSource.playbackRate.setTargetAtTime(1.0, now, ramp);
+      }
+
+      if (this.activeGain && this.activeGain.gain) {
+        this.activeGain.gain.setTargetAtTime(1.0, now, ramp);
+      }
+
+      if (enableMetalMode) {
+        if (this.activeDeHarsh) this.activeDeHarsh.gain.setTargetAtTime(-2.5, now, ramp);
+        if (this.activeBassPunch) this.activeBassPunch.gain.setTargetAtTime(2.0, now, ramp);
+        if (this.activeSmoothing) this.activeSmoothing.frequency.setTargetAtTime(12000, now, ramp);
+      } else {
+        if (this.activeDeHarsh) this.activeDeHarsh.gain.setTargetAtTime(0, now, ramp);
+        if (this.activeBassPunch) this.activeBassPunch.gain.setTargetAtTime(0, now, ramp);
+        if (this.activeSmoothing) this.activeSmoothing.frequency.setTargetAtTime(22050, now, ramp);
+      }
+
+      if (enableTreble && !enableMetalMode) {
+        if (this.activeTreble) this.activeTreble.gain.setTargetAtTime(1.5, now, ramp);
+      } else {
+        if (this.activeTreble) this.activeTreble.gain.setTargetAtTime(0, now, ramp);
+      }
+
+      if (this.activeCompressor && this.activeCompressor.threshold) {
+        this.activeCompressor.threshold.setTargetAtTime(enableLimiter ? -1.5 : 0, now, ramp);
+      }
+
+    } else {
+      // Original: 1.0x flat, no filters, no gain reduction
+      if (this.playbackSource && this.playbackSource.playbackRate) {
+        this.playbackSource.playbackRate.setTargetAtTime(1.0, now, ramp);
+      }
+
+      if (this.activeGain && this.activeGain.gain) {
+        this.activeGain.gain.setTargetAtTime(1.0, now, ramp);
+      }
+
+      if (this.activeDeHarsh) this.activeDeHarsh.gain.setTargetAtTime(0, now, ramp);
+      if (this.activeBassPunch) this.activeBassPunch.gain.setTargetAtTime(0, now, ramp);
+      if (this.activeSmoothing) this.activeSmoothing.frequency.setTargetAtTime(22050, now, ramp);
+      if (this.activeTreble) this.activeTreble.gain.setTargetAtTime(0, now, ramp);
+      if (this.activeCompressor && this.activeCompressor.threshold) {
+        this.activeCompressor.threshold.setTargetAtTime(0, now, ramp);
+      }
+    }
+  }
+
+  updateLivePlaybackParams(options = {}) {
+    if (!this.isPlaying || !this.playbackSource) return;
+    this.applyLiveDSP(options);
   }
 
   stopPlayback() {

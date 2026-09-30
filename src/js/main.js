@@ -165,15 +165,33 @@ document.addEventListener('DOMContentLoaded', () => {
     calcStatusText.innerHTML = `Selected: <b>${trimmer.formatTime(cutDur)}</b> → about <b>${trimmer.formatTime(afterSpeedUp)}</b> after speed-up, <b>${partCount} part${partCount > 1 ? 's' : ''}</b>`;
   }
 
-  // Preview Mode Buttons Wiring
+  // Helper to sync live Web Audio parameters without restarting playback
+  function syncLivePlaybackParams() {
+    if (isTrimmerPlaying && window.FHAudioEngine) {
+      const speed = parseFloat(sliderSpeed ? sliderSpeed.value : 2.3) || 2.3;
+      const ampDb = parseFloat(sliderAmp ? sliderAmp.value : -4) || -4;
+      const enableTreble = toggleTreble ? toggleTreble.checked : false;
+      const enableLimiter = toggleLimiter ? toggleLimiter.checked : true;
+      const enableMetalMode = toggleMetalMode ? toggleMetalMode.checked : false;
+
+      window.FHAudioEngine.updateLivePlaybackParams({
+        mode: currentPreviewMode,
+        speed,
+        ampDb,
+        enableTreble,
+        enableLimiter,
+        enableMetalMode
+      });
+    }
+  }
+
+  // Preview Mode Buttons Wiring (Seamless live mode switching)
   btnPreviewModes.forEach(btn => {
     btn.addEventListener('click', () => {
       btnPreviewModes.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentPreviewMode = btn.dataset.mode || 'original';
-      if (isTrimmerPlaying) {
-        startTrimmerPlayback();
-      }
+      syncLivePlaybackParams();
     });
   });
 
@@ -618,6 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (valAmp) valAmp.textContent = `${ampVal} dB`;
       }
       updateCalculationSummary();
+      syncLivePlaybackParams();
     });
   });
 
@@ -644,6 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (valSpeed) valSpeed.textContent = `${v.toFixed(1)}x`;
       presetPills.forEach(p => p.classList.remove('active'));
       updateCalculationSummary();
+      syncLivePlaybackParams();
     });
   }
 
@@ -652,6 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = parseInt(e.target.value, 10);
       if (valAmp) valAmp.textContent = `${v} dB`;
       presetPills.forEach(p => p.classList.remove('active'));
+      syncLivePlaybackParams();
     });
   }
 
@@ -673,14 +694,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (toggleTreble) {
     toggleTreble.addEventListener('change', () => {
       window.showToast(`Filter Treble: ${toggleTreble.checked ? 'AKTIF (+1.5 dB Subtle)' : 'MATI'}`);
-      if (isTrimmerPlaying && currentPreviewMode !== 'original') startTrimmerPlayback();
+      syncLivePlaybackParams();
     });
   }
 
   if (toggleLimiter) {
     toggleLimiter.addEventListener('change', () => {
       window.showToast(`Headroom Limiter: ${toggleLimiter.checked ? 'AKTIF (Threshold -1.5 dB)' : 'MATI'}`);
-      if (isTrimmerPlaying && currentPreviewMode !== 'original') startTrimmerPlayback();
+      syncLivePlaybackParams();
     });
   }
 
@@ -714,9 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.showToast('Mode Metal & Rock dinonaktifkan (Kurva EQ Standar).');
       }
 
-      if (isTrimmerPlaying && currentPreviewMode !== 'original') {
-        startTrimmerPlayback();
-      }
+      syncLivePlaybackParams();
     });
   }
 
