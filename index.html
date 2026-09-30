@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
   <!-- Main Styling -->
-  <link rel="stylesheet" href="./src/styles/main.css?v=5" />
+  <link rel="stylesheet" href="./src/styles/main.css?v=7" />
 </head>
 <body>
 
@@ -685,6 +685,62 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
 
           <!-- Accounts List -->
           <div id="accountsList" class="accounts-list"></div>
+
+          <!-- Tutorial: Cara Mendapatkan Roblox Open Cloud API Key -->
+          <div class="api-tutorial-box">
+            <div class="api-tutorial-header">
+              <div class="api-tutorial-title-row">
+                <span class="api-tutorial-badge">PANDUAN RESMI</span>
+                <h4 class="api-tutorial-title">Cara Mendapatkan Roblox Open Cloud API Key (100% Gratis)</h4>
+              </div>
+              <a href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noopener noreferrer" class="btn-open-roblox-hub" title="Buka Roblox Creator Hub di tab baru">
+                <span>Buka Roblox Creator Hub</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
+            </div>
+
+            <div class="api-tutorial-steps">
+              <div class="api-step-item">
+                <div class="api-step-num">1</div>
+                <div class="api-step-content">
+                  <div class="api-step-heading">Buka Halaman Credentials</div>
+                  <div class="api-step-desc">Login ke akun Roblox Anda dan buka <b>create.roblox.com/dashboard/credentials</b>, lalu klik tombol biru <b>"Create API Key"</b> di kanan atas.</div>
+                </div>
+              </div>
+
+              <div class="api-step-item">
+                <div class="api-step-num">2</div>
+                <div class="api-step-content">
+                  <div class="api-step-heading">Beri Nama &amp; Pilih Creator</div>
+                  <div class="api-step-desc">Ketik nama bebas (contoh: <code>FH Audio Uploader</code>). Di kolom <b>Creator</b>, pilih akun User Anda atau Group tempat lagu akan diupload.</div>
+                </div>
+              </div>
+
+              <div class="api-step-item highlight">
+                <div class="api-step-num highlight">3</div>
+                <div class="api-step-content">
+                  <div class="api-step-heading">Pilih Izin Assets (Wajib)</div>
+                  <div class="api-step-desc">
+                    Di bagian <b>Access Permissions</b>, klik <b>"Add API System"</b> ➔ pilih <b>Assets</b>. Centang kedua izin berikut:
+                    <div class="api-perm-pills">
+                      <span class="perm-pill">✓ asset:read</span>
+                      <span class="perm-pill">✓ asset:write</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="api-step-item">
+                <div class="api-step-num">4</div>
+                <div class="api-step-content">
+                  <div class="api-step-heading">IP Security &amp; Simpan</div>
+                  <div class="api-step-desc">
+                    Di <b>Security / IP Restrictions</b>, pilih <b>No IP Restrictions</b> (atau masukkan <code>0.0.0.0/0</code>) agar bisa diakses dari web/Vercel. Klik <b>"Save &amp; Generate Key"</b>, salin kodenya, lalu klik tombol <b>+ Add account</b> di atas!
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Section 2: Roblox Upload Naming -->
@@ -811,16 +867,16 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
   </script>
 
   <!-- Modular Scripts loaded in proper dependency order -->
-  <script src="./src/js/alias-generator.js?v=36"></script>
-  <script src="./src/js/storage.js?v=36"></script>
-  <script src="./src/js/toast.js?v=36"></script>
-  <script src="./src/js/navigation.js?v=36"></script>
-  <script src="./src/js/waveform.js?v=36"></script>
-  <script src="./src/js/audio-engine.js?v=36"></script>
-  <script src="./src/js/roblox-api.js?v=36"></script>
-  <script src="./src/js/history.js?v=36"></script>
-  <script src="./src/js/youtube.js?v=36"></script>
-  <script src="./src/js/tracklist.js?v=36"></script>
-  <script src="./src/js/main.js?v=36"></script>
+  <script src="./src/js/alias-generator.js?v=37"></script>
+  <script src="./src/js/storage.js?v=37"></script>
+  <script src="./src/js/toast.js?v=37"></script>
+  <script src="./src/js/navigation.js?v=37"></script>
+  <script src="./src/js/waveform.js?v=37"></script>
+  <script src="./src/js/audio-engine.js?v=37"></script>
+  <script src="./src/js/roblox-api.js?v=37"></script>
+  <script src="./src/js/history.js?v=37"></script>
+  <script src="./src/js/youtube.js?v=37"></script>
+  <script src="./src/js/tracklist.js?v=37"></script>
+  <script src="./src/js/main.js?v=37"></script>
 </body>
 </html>

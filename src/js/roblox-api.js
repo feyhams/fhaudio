@@ -33,8 +33,8 @@ function initSettingsModule() {
 
     if (accounts.length === 0) {
       accountsList.innerHTML = `
-        <div style="padding: 1.5rem; text-align: center; color: var(--text-dim); font-size: 0.85rem;">
-          Belum ada akun Roblox yang tersimpan. Klik <b>+ Add account</b> di atas untuk menambahkan API Key.
+        <div style="padding: 1.25rem; text-align: center; color: var(--text-dim); font-size: 0.85rem; border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 8px;">
+          Belum ada akun Roblox yang tersimpan. Klik <b>+ Add account</b> di atas atau ikuti <b>Panduan Resmi</b> di bawah ini untuk membuat API Key gratis.
         </div>
       `;
       return;
