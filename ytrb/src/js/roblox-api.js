@@ -7,6 +7,10 @@
 function initSettingsModule() {
   const accountsList = document.getElementById('accountsList');
   const btnOpenAddAccount = document.getElementById('btnOpenAddAccount');
+  const btnToggleApiTutorial = document.getElementById('btnToggleApiTutorial');
+  const apiTutorialBox = document.getElementById('apiTutorialBox');
+  const btnCloseApiTutorial = document.getElementById('btnCloseApiTutorial');
+  const btnModalHowToGetApi = document.getElementById('btnModalHowToGetApi');
   const modalAccount = document.getElementById('modalAccount');
   const modalTitle = document.getElementById('modalTitle');
   const btnCloseModal = document.getElementById('btnCloseModal');
@@ -25,6 +29,45 @@ function initSettingsModule() {
   const chkPartNumber = document.getElementById('chkPartNumber');
   const namingPreview = document.getElementById('namingPreview');
 
+  // Toggle API Tutorial Box Visibility
+  function toggleTutorial(show) {
+    if (!apiTutorialBox) return;
+    const isCurrentlyOpen = apiTutorialBox.style.display !== 'none';
+    const shouldOpen = typeof show === 'boolean' ? show : !isCurrentlyOpen;
+
+    if (shouldOpen) {
+      apiTutorialBox.style.display = 'flex';
+      if (btnToggleApiTutorial) {
+        btnToggleApiTutorial.classList.add('active');
+        btnToggleApiTutorial.setAttribute('aria-expanded', 'true');
+      }
+      setTimeout(() => {
+        apiTutorialBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+    } else {
+      apiTutorialBox.style.display = 'none';
+      if (btnToggleApiTutorial) {
+        btnToggleApiTutorial.classList.remove('active');
+        btnToggleApiTutorial.setAttribute('aria-expanded', 'false');
+      }
+    }
+  }
+
+  if (btnToggleApiTutorial) {
+    btnToggleApiTutorial.addEventListener('click', () => toggleTutorial());
+  }
+
+  if (btnCloseApiTutorial) {
+    btnCloseApiTutorial.addEventListener('click', () => toggleTutorial(false));
+  }
+
+  if (btnModalHowToGetApi) {
+    btnModalHowToGetApi.addEventListener('click', () => {
+      closeModal();
+      toggleTutorial(true);
+    });
+  }
+
   // Render accounts list in settings
   function renderAccountsList() {
     if (!accountsList) return;
@@ -33,10 +76,14 @@ function initSettingsModule() {
 
     if (accounts.length === 0) {
       accountsList.innerHTML = `
-        <div style="padding: 1.5rem; text-align: center; color: var(--text-dim); font-size: 0.85rem;">
-          Belum ada akun Roblox yang tersimpan. Klik <b>+ Add account</b> di atas untuk menambahkan API Key.
+        <div style="padding: 1.25rem; text-align: center; color: var(--text-dim); font-size: 0.85rem; border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 8px;">
+          Belum ada akun Roblox yang tersimpan. Klik <button type="button" id="btnEmptyHowToGetApi" class="btn-inline-tutorial-trigger">Cara mendapatkan API</button> atau <b>+ Add account</b> di atas untuk menambahkan.
         </div>
       `;
+      const btnEmptyHowToGetApi = document.getElementById('btnEmptyHowToGetApi');
+      if (btnEmptyHowToGetApi) {
+        btnEmptyHowToGetApi.addEventListener('click', () => toggleTutorial(true));
+      }
       return;
     }
 
@@ -155,7 +202,7 @@ function initSettingsModule() {
   }
 
   // Naming preview logic
-  function updateNamingPreview() {
+  function updateNamingPreview(saveToStorage = false) {
     if (!namingPreview) return;
     const settings = window.FHStorage.getSettings();
     const mode = selNamingMode ? selNamingMode.value : (settings.namingMode || 'stealth_scene');
@@ -186,14 +233,16 @@ function initSettingsModule() {
 
     namingPreview.innerHTML = `${escapeHtml(titlePart1)}<br>${escapeHtml(titlePart2)}`;
 
-    // Save to settings
-    window.FHStorage.saveSettings({
-      ...settings,
-      namingMode: mode,
-      sceneCategory: category,
-      aliasPrefix: prefix || 'BGM',
-      includePartNumber: partNumOn
-    });
+    // Save to settings ONLY when explicitly requested by user interaction, NOT on initial load
+    if (saveToStorage) {
+      window.FHStorage.saveSettings({
+        ...settings,
+        namingMode: mode,
+        sceneCategory: category,
+        aliasPrefix: prefix || 'BGM',
+        includePartNumber: partNumOn
+      });
+    }
   }
 
   // Populate initial values
@@ -203,12 +252,13 @@ function initSettingsModule() {
   if (inpAliasPrefix && initSettings.aliasPrefix) inpAliasPrefix.value = initSettings.aliasPrefix;
   if (chkPartNumber && initSettings.includePartNumber !== undefined) chkPartNumber.checked = initSettings.includePartNumber;
 
-  if (selNamingMode) selNamingMode.addEventListener('change', updateNamingPreview);
-  if (selSceneCategory) selSceneCategory.addEventListener('change', updateNamingPreview);
-  if (inpAliasPrefix) inpAliasPrefix.addEventListener('input', updateNamingPreview);
-  if (chkPartNumber) chkPartNumber.addEventListener('change', updateNamingPreview);
+  if (selNamingMode) selNamingMode.addEventListener('change', () => updateNamingPreview(true));
+  if (selSceneCategory) selSceneCategory.addEventListener('change', () => updateNamingPreview(true));
+  if (inpAliasPrefix) inpAliasPrefix.addEventListener('input', () => updateNamingPreview(true));
+  if (chkPartNumber) chkPartNumber.addEventListener('change', () => updateNamingPreview(true));
 
-  updateNamingPreview();
+  // Initialize display without saving or triggering server disk writes
+  updateNamingPreview(false);
   renderAccountsList();
 
   window.FHSettings = {

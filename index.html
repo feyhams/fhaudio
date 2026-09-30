@@ -677,26 +677,35 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
               <h2 class="settings-section-title">Roblox API Accounts</h2>
               <p class="settings-section-sub">Save several Open Cloud API Keys and pick which one is active. The active account is used when you press "Upload to Roblox" in the History tab. Keys are stored only on this device.</p>
             </div>
-            <button type="button" id="btnOpenAddAccount" class="btn-add-account">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              <span>+ Add account</span>
-            </button>
+            <div class="settings-actions-wrap">
+              <button type="button" id="btnToggleApiTutorial" class="btn-tutorial-toggle" title="Lihat panduan cara mendapatkan Roblox Open Cloud API Key">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span>Cara mendapatkan API</span>
+              </button>
+              <button type="button" id="btnOpenAddAccount" class="btn-add-account">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Add account</span>
+              </button>
+            </div>
           </div>
 
           <!-- Accounts List -->
           <div id="accountsList" class="accounts-list"></div>
 
-          <!-- Tutorial: Cara Mendapatkan Roblox Open Cloud API Key -->
-          <div class="api-tutorial-box">
+          <!-- Tutorial: Cara Mendapatkan Roblox Open Cloud API Key (Default Hidden, muncul saat tombol diklik) -->
+          <div id="apiTutorialBox" class="api-tutorial-box" style="display: none;">
             <div class="api-tutorial-header">
               <div class="api-tutorial-title-row">
                 <span class="api-tutorial-badge">PANDUAN RESMI</span>
                 <h4 class="api-tutorial-title">Cara Mendapatkan Roblox Open Cloud API Key (100% Gratis)</h4>
               </div>
-              <a href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noopener noreferrer" class="btn-open-roblox-hub" title="Buka Roblox Creator Hub di tab baru">
-                <span>Buka Roblox Creator Hub</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              </a>
+              <div class="api-tutorial-header-actions">
+                <a href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noopener noreferrer" class="btn-open-roblox-hub" title="Buka Roblox Creator Hub di tab baru">
+                  <span>Buka Roblox Creator Hub</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+                <button type="button" id="btnCloseApiTutorial" class="btn-close-tutorial" title="Tutup panduan">✕</button>
+              </div>
             </div>
 
             <div class="api-tutorial-steps">
@@ -834,7 +843,10 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
         </div>
 
         <div class="modal-form-col">
-          <label class="modal-label" for="accApiKey">Open Cloud API Key</label>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="modal-label" for="accApiKey">Open Cloud API Key</label>
+            <button type="button" id="btnModalHowToGetApi" class="btn-inline-tutorial-trigger" style="font-size: 0.73rem;">Cara mendapatkan API?</button>
+          </div>
           <input type="text" id="accApiKey" class="modal-input" placeholder="Tempel API Key Open Cloud di sini..." required />
           <span style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;">
             Dibutuhkan izin: <b>asset:read</b> dan <b>asset:write</b> pada Open Cloud.
@@ -867,16 +879,16 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
   </script>
 
   <!-- Modular Scripts loaded in proper dependency order -->
-  <script src="./src/js/alias-generator.js?v=37"></script>
-  <script src="./src/js/storage.js?v=37"></script>
-  <script src="./src/js/toast.js?v=37"></script>
-  <script src="./src/js/navigation.js?v=37"></script>
-  <script src="./src/js/waveform.js?v=37"></script>
-  <script src="./src/js/audio-engine.js?v=37"></script>
-  <script src="./src/js/roblox-api.js?v=37"></script>
-  <script src="./src/js/history.js?v=37"></script>
-  <script src="./src/js/youtube.js?v=37"></script>
-  <script src="./src/js/tracklist.js?v=37"></script>
-  <script src="./src/js/main.js?v=37"></script>
+  <script src="./src/js/alias-generator.js?v=38"></script>
+  <script src="./src/js/storage.js?v=38"></script>
+  <script src="./src/js/toast.js?v=38"></script>
+  <script src="./src/js/navigation.js?v=38"></script>
+  <script src="./src/js/waveform.js?v=38"></script>
+  <script src="./src/js/audio-engine.js?v=38"></script>
+  <script src="./src/js/roblox-api.js?v=38"></script>
+  <script src="./src/js/history.js?v=38"></script>
+  <script src="./src/js/youtube.js?v=38"></script>
+  <script src="./src/js/tracklist.js?v=38"></script>
+  <script src="./src/js/main.js?v=38"></script>
 </body>
 </html>
