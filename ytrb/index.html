@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FH Audio V2 - Roblox Stealth Audio Engine</title>
+  <meta name="description" content="Aplikasi studio audio Roblox V2: Anti-Moderation Stealth Scene Naming, Pemotong waveform presisi, Bypass Speed-up, Multi-Part, dan Open Cloud Uploader." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Main Styling -->
+  <link rel="stylesheet" href="./src/styles/main.css?v=5" />
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- ==========================================
+         SIDEBAR NAVIGATION
+         ========================================== -->
+    <aside class="sidebar">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">FH <span>Audio V2</span></div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="sidebar-nav">
+        <button type="button" id="navBypass" class="nav-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Bypass Audio</span>
+        </button>
+
+        <button type="button" id="navHistory" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>History</span>
+        </button>
+
+        <button type="button" id="navSettings" class="nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer (Server Status & User Info) -->
+      <div class="sidebar-footer">
+        <div id="sidebarServerStatus" class="server-status-pill checking" title="Klik untuk cek status koneksi server lokal">
+          <span class="status-indicator-dot"></span>
+          <span id="serverStatusText" class="server-status-label">Memeriksa Server...</span>
+        </div>
+        <div class="user-card" style="margin-top: 0.5rem;">
+          <div class="user-avatar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="user-info">
+            <span class="user-name">FH Audio</span>
+            <span class="user-status">Lifetime license</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==========================================
+         MAIN CONTENT AREA
+         ========================================== -->
+    <main class="main-content custom-scroll">
+
+      <!-- ==========================================
+           TAB 1: BYPASS AUDIO
+           ========================================== -->
+      <section id="viewBypass" class="view-panel active">
+        <!-- Top Mode Switcher Bar -->
+        <div class="mode-switcher-bar">
+          <div class="mode-pills-wrap">
+            <button type="button" id="btnModeSingle" class="mode-pill-btn active">Single</button>
+            <button type="button" id="btnModeMass" class="mode-pill-btn">Mass Convert</button>
+          </div>
+        </div>
+
+        <!-- SINGLE CONVERT PANEL -->
+        <div id="singleConvertPanel" class="bypass-card">
+          <!-- Drop Zone Area -->
+          <div id="dropZone" class="dropzone-box">
+            <!-- Empty state -->
+            <div id="dropzoneEmptyContent" class="dropzone-content-block">
+              <div class="dropzone-icon">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="dropzone-title">Click or Drag &amp; Drop audio file here (.mp3 / .wav / .ogg)</div>
+              <div class="dropzone-sub">Select several files to open Mass Convert</div>
+            </div>
+
+            <!-- Loaded state (Shown when audio loaded / fetched) -->
+            <div id="dropzoneLoadedContent" class="dropzone-content-block" style="display: none;">
+              <div class="dropzone-icon loaded">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div id="dropzoneFileName" class="dropzone-filename-yellow">-</div>
+            </div>
+
+            <input type="file" id="fileInput" accept="audio/*" style="display: none;" />
+          </div>
+
+          <!-- URL Input & Fetch Row -->
+          <div class="url-input-row">
+            <div class="url-input-wrap">
+              <input type="text" id="urlInput" class="url-input-field" placeholder="Or paste a URL (YouTube, SoundCloud, etc.)" autocomplete="off" />
+            </div>
+            <button type="button" id="btnFetch" class="btn-fetch">Fetch</button>
+            <button type="button" id="btnToggleTracklist" class="btn-toggle-tracklist" title="Buka Pembagi Lagu per Tracklist / Chapter">
+              📋 Tracklist
+            </button>
+          </div>
+
+          <!-- Quick test shortcuts matching reference screenshot -->
+          <div class="quick-test-row">
+            <span class="quick-test-label">Quick test:</span>
+            <button type="button" class="btn-quick-pill" data-url="https://www.youtube.com/watch?v=8k2CqS3smes">🎵 Killing Me Softly (YouTube)</button>
+            <button type="button" class="btn-quick-pill" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">🎵 Rick Astley (YouTube)</button>
+            <button type="button" class="btn-quick-pill" data-url="synthetic:retrosynth">🎵 Retro Synth (.mp3)</button>
+          </div>
+
+          <!-- TRACKLIST SPLITTER PANEL (Option A) -->
+          <div id="tracklistPanel" class="tracklist-panel" style="display: none;">
+            <div class="tracklist-header-row">
+              <div class="tracklist-header-left">
+                <span class="tracklist-badge">ALBUM & PLAYLIST SPLITTER</span>
+                <h3 class="tracklist-title">Bagi Otomatis Berdasarkan Tracklist</h3>
+                <p class="tracklist-desc">Tempel daftar lagu & timestamp dari deskripsi YouTube (contoh: <code>00:00 | Silhouettes</code>). Sistem akan memotong setiap lagu secara presisi dan otomatis menerapkan stealth bypass ke Riwayat.</p>
+              </div>
+              <button type="button" id="btnCloseTracklist" class="btn-close-tracklist" title="Tutup panel tracklist">✕</button>
+            </div>
+
+            <div class="tracklist-input-group">
+              <textarea id="tracklistInput" class="tracklist-textarea" rows="4" placeholder="Tempel tracklist di sini, contoh:
+00:00 | Silhouettes
+03:21 | Pen Y Fan
+07:02 | Petrichor
+11:41 | Spheres
+15:19 | Wandering..."></textarea>
+            </div>
+
+            <!-- Detected Tracks Preview List -->
+            <div id="tracklistPreviewBox" class="tracklist-preview-box" style="display: none;">
+              <div class="tracklist-preview-header">
+                <span id="tracklistCountLabel" class="tracklist-count-label">Daftar Lagu Terdeteksi (0 Track)</span>
+                <span class="tracklist-hint">Tiap lagu otomatis mendapatkan Roblox Stealth Alias & masuk ke Riwayat</span>
+              </div>
+              <div id="tracklistItemsList" class="tracklist-items-list custom-scroll"></div>
+            </div>
+
+            <!-- Tracklist Action Button -->
+            <div class="tracklist-actions-bar">
+              <button type="button" id="btnProcessTracklist" class="btn-process-tracklist" disabled>
+                ⚡ Potong & Bypass Semua Lagu (0 Track) ➔ History
+              </button>
+            </div>
+
+            <!-- Tracklist Progress Box -->
+            <div id="tracklistProgressBox" class="tracklist-progress-box" style="display: none;">
+              <div class="tracklist-progress-header">
+                <span id="tracklistProgressStatus" class="tracklist-progress-status">Memproses Lagu 1 dari 8...</span>
+                <span id="tracklistProgressPercent" class="tracklist-progress-percent">0%</span>
+              </div>
+              <div class="tracklist-progress-track">
+                <div id="tracklistProgressBar" class="tracklist-progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Source Bar (Shown when audio loaded) -->
+          <div id="sourceBar" class="source-bar" style="display: none;">
+            <img id="sourceThumb" class="source-thumb" src="" alt="Thumbnail" />
+            <div class="source-info">
+              <span class="source-tag">SOURCE AUDIO</span>
+              <div class="source-title-row">
+                <span id="sourceTitle" class="source-title" title="Klik untuk mengedit judul">-</span>
+                <input type="text" id="sourceTitleInput" class="source-title-input" style="display: none;" placeholder="Ketik judul audio..." />
+                <button type="button" id="btnEditSourceTitle" class="btn-edit-title-icon" title="Edit judul audio">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto Chapters Detected Banner -->
+          <div id="chaptersAlertBanner" class="chapters-alert-banner" style="display: none;">
+            <div class="chapters-alert-left">
+              <div class="chapters-alert-icon">✨</div>
+              <div class="chapters-alert-text">
+                <div class="chapters-alert-title" id="chaptersAlertTitle">Terdeteksi Potongan Lagu (Chapters) Otomatis di Video Ini!</div>
+                <div class="chapters-alert-sub" id="chaptersAlertSub">YouTube telah menyediakan pembagian bab untuk setiap lagu. Ingin potong otomatis menjadi lagu-lagu terpisah?</div>
+              </div>
+            </div>
+            <div class="chapters-alert-actions">
+              <button type="button" id="btnApplyAutoChapters" class="btn-apply-chapters">⚡ Ya, Potong Jadi Lagu Terpisah</button>
+              <button type="button" id="btnDismissChapters" class="btn-dismiss-chapters">Biarkan 1 Lagu Utuh</button>
+            </div>
+          </div>
+
+          <!-- Interactive Waveform Canvas Trimmer -->
+          <div id="waveformCard" class="waveform-card" style="display: none;">
+            <div class="waveform-header">
+              <span class="waveform-instruction">Original Audio — drag the handles to cut, drag the selection to move it</span>
+            </div>
+
+            <!-- Waveform Canvas Box -->
+            <div id="waveformContainer" class="waveform-container-outer">
+              <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+            </div>
+
+            <!-- Dynamic Ruler ticks -->
+            <div id="waveformRuler" class="waveform-ruler">
+              <span>0:00</span>
+              <span>0:30</span>
+              <span>1:00</span>
+              <span>1:30</span>
+              <span>2:00</span>
+              <span>2:30</span>
+            </div>
+
+            <!-- Trimmer Controls Bar -->
+            <div class="trimmer-controls-bar">
+              <div class="trimmer-play-row">
+                <div class="trimmer-play-left">
+                  <button type="button" id="btnCirclePlay" class="btn-circle-play" title="Putar / Jeda Seleksi">
+                    <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <svg id="pauseIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                      <rect x="6" y="4" width="4" height="16"></rect>
+                      <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                  </button>
+                  <div class="trimmer-time-display-wrap">
+                    <span id="trimmerCurrTime" class="trimmer-curr-time">0:00.0</span>
+                    <span class="trimmer-time-slash">/</span>
+                    <span id="trimmerTotalTime" class="trimmer-total-time">3:05</span>
+                  </div>
+                </div>
+
+                <!-- Preview Mode Selector (Original, Bypass DSP, Simulasi Roblox) -->
+                <div class="preview-mode-switch-group">
+                  <button type="button" class="btn-preview-mode active" data-mode="original" title="Dengarkan audio asli kecepatan 1.0x">Original</button>
+                  <button type="button" class="btn-preview-mode" data-mode="bypass" title="Dengarkan audio dipercepat sesuai preset dengan limiter & filter">⚡ Bypass DSP</button>
+                  <button type="button" class="btn-preview-mode" data-mode="roblox" title="Simulasi audio saat diperlambat di engine Roblox">🎮 Simulasi Roblox</button>
+                </div>
+              </div>
+
+              <!-- Timecode inputs & snap buttons -->
+              <div class="trimmer-timecode-inputs">
+                <div class="timecode-block">
+                  <span class="timecode-label">Start</span>
+                  <input type="text" id="inputStartTime" class="timecode-input" value="0:00.0" />
+                  <button type="button" id="btnSnapStart" class="btn-playhead-snap">⇥ at playhead</button>
+                </div>
+                <div class="timecode-block">
+                  <span class="timecode-label">End</span>
+                  <input type="text" id="inputEndTime" class="timecode-input" value="3:05.4" />
+                  <button type="button" id="btnSnapEnd" class="btn-playhead-snap">at playhead ⇤</button>
+                </div>
+              </div>
+
+              <!-- Dynamic status caption -->
+              <div id="calcStatusText" class="trimmer-calc-status">
+                Selected: <b>3:05.4</b> → about <b>1:20.6</b> after speed-up, 1 part
+              </div>
+            </div>
+          </div>
+
+          <!-- Presets & Quality Parameter Pills -->
+          <div class="controls-grid">
+            <!-- Left: Presets (Speed & Amplification) -->
+            <div class="control-col">
+              <div class="control-col-header">
+                <span class="control-col-title">Presets</span>
+              </div>
+              <span class="control-col-sub">Select a preset to adjust Speed and Amplification for bypassing.</span>
+              <div class="pills-row">
+                <button type="button" class="btn-param-pill btn-preset-pill" data-speed="2.1" data-amp="-3">Slow 2.1x</button>
+                <button type="button" class="btn-param-pill btn-preset-pill active" data-speed="2.3" data-amp="-4">Default 2.3x</button>
+                <button type="button" class="btn-param-pill btn-preset-pill" data-speed="2.5" data-amp="-5">Fast 2.5x</button>
+                <button type="button" class="btn-param-pill btn-preset-pill" data-speed="2.7" data-amp="-6">Faster 2.7x</button>
+                <button type="button" class="btn-param-pill btn-preset-pill" data-speed="2.9" data-amp="-8">Ultra 2.9x</button>
+              </div>
+            </div>
+
+            <!-- Right: Audio Quality (Max duration) -->
+            <div class="control-col">
+              <div class="control-col-header">
+                <span class="control-col-title">Audio Quality</span>
+              </div>
+              <span class="control-col-sub">Roblox limit is 20MB. Higher quality requires shorter duration.</span>
+              <div class="pills-row">
+                <button type="button" class="btn-param-pill btn-quality-pill" data-duration="400">Normal 400s</button>
+                <button type="button" class="btn-param-pill btn-quality-pill" data-duration="300">High 300s</button>
+                <button type="button" class="btn-param-pill btn-quality-pill active" data-duration="250">Extreme 250s</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sliders Grid -->
+          <div class="sliders-grid">
+            <!-- Speed Slider -->
+            <div class="slider-item">
+              <div class="slider-label-row">
+                <span>Speed</span>
+                <span id="valSpeed" class="slider-val-tag">2.3x</span>
+              </div>
+              <input type="range" id="sliderSpeed" class="custom-range" min="1.0" max="3.5" step="0.1" value="2.3" />
+            </div>
+
+            <!-- Amplification (dB) Slider -->
+            <div class="slider-item">
+              <div class="slider-label-row">
+                <span>Amplification (dB)</span>
+                <span id="valAmp" class="slider-val-tag">-4 dB</span>
+              </div>
+              <input type="range" id="sliderAmp" class="custom-range" min="-12" max="6" step="1" value="-4" />
+            </div>
+
+            <!-- Quality Slider -->
+            <div class="slider-item">
+              <div class="slider-label-row">
+                <span>Quality (0-10)</span>
+                <span id="valQuality" class="slider-val-tag">10</span>
+              </div>
+              <input type="range" id="sliderQuality" class="custom-range" min="1" max="10" step="1" value="10" />
+            </div>
+
+            <!-- Max Duration Slider -->
+            <div class="slider-item">
+              <div class="slider-label-row">
+                <span>Max Duration (sec)</span>
+                <span id="valMaxDuration" class="slider-val-tag">250s</span>
+              </div>
+              <input type="range" id="sliderMaxDuration" class="custom-range" min="60" max="420" step="10" value="250" />
+            </div>
+          </div>
+
+          <!-- Kualitas Suara Bersih & Jernih (3 Saklar Pengaturan Baru) -->
+          <div class="audio-enhancement-card">
+            <!-- 1. Filter Treble (+1.5 dB Subtle) [Opsional] -->
+            <div class="enhancement-row">
+              <div class="enhancement-info-wrap">
+                <span class="enhancement-title">Filter Treble (+1.5 dB Subtle)</span>
+                <span class="badge-tag badge-optional">Opsional</span>
+                <div class="info-tooltip-trigger" title="Dorongan lembut +1.5 dB pada 8000 Hz untuk cymbal drum dan vokal tanpa sibilance (desis tajam) saat diperlambat di Roblox. Status Default: OFF.">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </div>
+              </div>
+              <label class="ios-switch">
+                <input type="checkbox" id="toggleTreble" />
+                <span class="ios-slider"></span>
+              </label>
+            </div>
+
+            <!-- 2. Headroom Limiter -->
+            <div class="enhancement-row">
+              <div class="enhancement-info-wrap">
+                <span class="enhancement-title">Headroom Limiter</span>
+                <div class="info-tooltip-trigger" title="True DynamicsCompressor (threshold -1.5 dB, ratio 20:1) yang aktif mencegah lonjakan gelombang suara melewati batas digital 0 dBFS (bebas kresek/clipping). Status Default: ON.">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </div>
+              </div>
+              <label class="ios-switch">
+                <input type="checkbox" id="toggleLimiter" checked />
+                <span class="ios-slider"></span>
+              </label>
+            </div>
+
+            <!-- 3. Auto-Split Multi-Part (> 6 Menit) [Anti-Tolak 7 Menit] -->
+            <div class="enhancement-row">
+              <div class="enhancement-info-wrap">
+                <span class="enhancement-title">Auto-Split Multi-Part (> 6 Menit)</span>
+                <span class="badge-tag badge-anti-tolak">Anti-Tolak 7 Menit</span>
+                <div class="info-tooltip-trigger" title="Otomatis memotong lagu panjang menjadi beberapa bagian aman jika melebihi 6 menit (360 detik) untuk mencegah penolakan Roblox. Status Default: ON.">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </div>
+              </div>
+              <label class="ios-switch">
+                <input type="checkbox" id="toggleAutoSplit" checked />
+                <span class="ios-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bottom Actions & Checkbox -->
+          <div class="bypass-bottom-actions">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkAutoUpload" />
+              <div class="checkbox-text-wrap">
+                <span class="checkbox-main-text">Upload every part to Roblox after converting</span>
+                <span class="checkbox-sub-text">Uses the active account from Settings, one part at a time.</span>
+              </div>
+            </label>
+
+            <!-- Convert Button -->
+            <button type="button" id="btnConvert" class="btn-convert-large" disabled>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span>Convert Audio</span>
+            </button>
+
+            <!-- Conversion Progress Bar -->
+            <div id="convertProgressWrap" class="convert-progress-wrap">
+              <div class="convert-progress-bar">
+                <div id="convertProgressFill" class="convert-progress-fill"></div>
+              </div>
+              <span id="convertProgressStatus" class="convert-progress-status">Memproses...</span>
+            </div>
+
+            <!-- Result Card (shown after conversion) -->
+            <div id="resultCard" class="result-card">
+              <div class="result-header">
+                <span class="result-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Konversi Berhasil Selesai!
+                </span>
+              </div>
+
+              <div class="result-meta-grid">
+                <div class="meta-chip">
+                  <span class="meta-chip-label">Speed</span>
+                  <span id="resultMetaSpeed" class="meta-chip-val">2.3x</span>
+                </div>
+                <div class="meta-chip">
+                  <span class="meta-chip-label">Set in Roblox</span>
+                  <span id="resultMetaRobloxSpeed" class="meta-chip-val">0.435</span>
+                </div>
+                <div class="meta-chip">
+                  <span class="meta-chip-label">Volume</span>
+                  <span id="resultMetaVol" class="meta-chip-val">-4 dB</span>
+                </div>
+                <div class="meta-chip">
+                  <span class="meta-chip-label">Parts</span>
+                  <span id="resultMetaParts" class="meta-chip-val">1 Part</span>
+                </div>
+              </div>
+
+              <div class="result-actions-row">
+                <button type="button" id="btnDownloadResultAudio" class="btn-result-action primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Unduh Berkas Audio (.ogg)
+                </button>
+                <button type="button" id="btnUploadResultRoblox" class="btn-result-action">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path><polyline points="16 16 12 12 8 16"></polyline></svg>
+                  Upload ke Roblox
+                </button>
+                <button type="button" id="btnOpenInHistory" class="btn-result-action">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  Buka di History
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MASS CONVERT PANEL -->
+        <div id="massConvertPanel" class="bypass-card mass-convert-wrap">
+          <div class="mass-convert-header" style="margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-gold);">Mass Convert &amp; Batch YouTube</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0.35rem 0 0 0; line-height: 1.4;">
+              Konversi banyak lagu full sekaligus tanpa waveform. Otomatis menerapkan bypass (Speed 2.3x, Gain -4 dB, OGG Vorbis) dan langsung tersimpan rapi ke <b>folder Downloads</b> serta <b>Conversion History</b>.
+            </p>
+          </div>
+
+          <!-- YouTube URLs Multi-line Input Box -->
+          <div id="batchUrlContainer" class="batch-url-container" style="display: flex; margin-top: 0;">
+            <div class="batch-url-header">
+              <span class="batch-url-title">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                Daftar Link YouTube (1 Baris = 1 Link)
+              </span>
+            </div>
+            <textarea id="batchUrlTextarea" class="batch-url-textarea" rows="7" placeholder="Tempel daftar link YouTube di sini (1 link per baris)...">https://www.youtube.com/watch?v=lCM2YxDg6OQ
+https://www.youtube.com/watch?v=Qcp17QPN72Q
+https://www.youtube.com/watch?v=rmFWsIIuMbA
+https://www.youtube.com/watch?v=_3P26FaPxgk
+https://www.youtube.com/watch?v=kINkBXS_YZY
+https://www.youtube.com/watch?v=-Lhx0yTjSac
+https://www.youtube.com/watch?v=v_XhxONGEJc
+https://www.youtube.com/watch?v=cWE0sSZ9yLc
+https://www.youtube.com/watch?v=cVtcbqXK42I
+https://www.youtube.com/watch?v=JXukrO-yF7g
+https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
+            <div class="batch-url-actions">
+              <div class="batch-preset-info">
+                Preset Default: <b>Speed 2.3x</b> | <b>Volume -4 dB</b> | <b>OGG Vorbis</b> | <b>Auto-split 250s</b>
+              </div>
+              <button type="button" id="btnStartBatchConvert" class="btn-start-batch">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Mulai Mass Convert (11 Lagu)</span>
+              </button>
+            </div>
+
+            <!-- Batch Progress Block -->
+            <div id="batchProgressBlock" class="batch-progress-block" style="display: none;">
+              <div class="batch-progress-header">
+                <span id="batchProgressCurrentTitle" class="batch-progress-title">Memproses...</span>
+                <span id="batchProgressPercent" class="batch-progress-pct">0%</span>
+              </div>
+              <div class="batch-progress-bar-bg">
+                <div id="batchProgressFill" class="batch-progress-bar-fill" style="width: 0%;"></div>
+              </div>
+              <div id="batchQueueStatusList" class="batch-queue-status-list custom-scroll"></div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin: 0.5rem 0;">
+            <div style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
+            <span style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Atau Drag &amp; Drop Berkas Audio Lokal</span>
+            <div style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
+          </div>
+
+          <!-- Dropzone Box for Local Audio Files -->
+          <div class="dropzone-box">
+            <div class="dropzone-icon">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            <div class="dropzone-title">Seret beberapa file audio sekaligus ke sini (.mp3 / .wav / .ogg)</div>
+            <div class="dropzone-sub">Mendukung banyak file lokal sekaligus</div>
+          </div>
+
+          <div id="batchQueueList" class="batch-queue-list"></div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 2: CONVERSION HISTORY
+           ========================================== -->
+      <section id="viewHistory" class="view-panel">
+        <!-- History Top Header -->
+        <div class="history-header-row">
+          <h2 class="history-page-title">Conversion History</h2>
+          <div class="history-top-actions">
+            <button type="button" id="btnHistoryUploadAll" class="btn-top-upload-all">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span id="btnHistoryUploadAllText">Upload all (58)</span>
+            </button>
+            <button type="button" id="btnHistoryExportTxtSimple" class="btn-top-export btn-export-highlight" title="Ekspor daftar simpel: Hanya Judul & Raw Asset ID ke .txt">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <span>Export TXT Simple</span>
+            </button>
+            <button type="button" id="btnHistoryExportTxt" class="btn-top-export btn-export-secondary" title="Ekspor riwayat lengkap beserta detail Roblox config ke .txt">
+              <span>TXT Lengkap</span>
+            </button>
+            <button type="button" id="btnHistoryExportCsv" class="btn-top-export btn-export-secondary" title="Ekspor ke format spreadsheet CSV">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Stats Cards -->
+        <div class="stats-cards-grid">
+          <div class="stat-card">
+            <span id="statSongs" class="stat-num">0</span>
+            <span class="stat-label">SONGS</span>
+          </div>
+          <div class="stat-card">
+            <span id="statParts" class="stat-num">0</span>
+            <span class="stat-label">TOTAL PARTS</span>
+          </div>
+          <div class="stat-card">
+            <span id="statUploaded" class="stat-num gold">0</span>
+            <span class="stat-label">UPLOADED</span>
+          </div>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div class="filter-tabs-row">
+          <button type="button" id="tabFilterAll" class="filter-tab-pill active">
+            <span>All</span>
+            <span class="filter-badge">0</span>
+          </button>
+          <button type="button" id="tabFilterApproved" class="filter-tab-pill approved">
+            <span>Approved</span>
+            <span class="filter-badge">0</span>
+          </button>
+          <button type="button" id="tabFilterRejected" class="filter-tab-pill rejected">
+            <span>Rejected</span>
+            <span class="filter-badge">0</span>
+          </button>
+          <button type="button" id="tabFilterReviewing" class="filter-tab-pill reviewing">
+            <span>Reviewing</span>
+            <span class="filter-badge">0</span>
+          </button>
+          <button type="button" id="tabFilterUnchecked" class="filter-tab-pill unchecked">
+            <span>Unchecked</span>
+            <span class="filter-badge">0</span>
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="history-search-bar">
+          <svg class="history-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="historySearchInput" class="history-search-input" placeholder="Search by song or part name..." />
+        </div>
+
+        <!-- History Cards List Container -->
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <!-- ==========================================
+           TAB 3: SETTINGS
+           ========================================== -->
+      <section id="viewSettings" class="view-panel">
+        <!-- Section 1: Roblox API Accounts -->
+        <div class="settings-card">
+          <div class="settings-header-row">
+            <div>
+              <h2 class="settings-section-title">Roblox API Accounts</h2>
+              <p class="settings-section-sub">Save several Open Cloud API Keys and pick which one is active. The active account is used when you press "Upload to Roblox" in the History tab. Keys are stored only on this device.</p>
+            </div>
+            <button type="button" id="btnOpenAddAccount" class="btn-add-account">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Add account</span>
+            </button>
+          </div>
+
+          <!-- Accounts List -->
+          <div id="accountsList" class="accounts-list"></div>
+        </div>
+
+        <!-- Section 2: Roblox Upload Naming -->
+        <!-- Section 2: Roblox Upload Stealth Naming -->
+        <div class="settings-card">
+          <div>
+            <h2 class="settings-section-title">Roblox Upload & Anti-Moderation</h2>
+            <p class="settings-section-sub">Atur penamaan otomatis aset audio saat diunggah ke Roblox untuk meloloskan moderasi teks hak cipta. Judul asli lagu Anda tetap tersimpan utuh di Riwayat dan Ekspor.</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+            <div class="form-group" style="display:flex; flex-direction:column; gap:0.35rem;">
+              <label class="form-label" for="selNamingMode" style="font-size:0.85rem; font-weight:700; color:#e2e8f0;">Mode Penamaan di Roblox</label>
+              <select id="selNamingMode" class="form-select" style="background:#090d16; border:1px solid #1e293b; color:#fff; padding:0.6rem 0.8rem; border-radius:8px; font-size:0.88rem;">
+                <option value="stealth_scene" selected>🛡️ Mode Stealth Scene / Place (Anti-Tolak Roblox - Rekomendasi)</option>
+                <option value="original_song">⚠️ Judul Asli Lagu (Rawan Ditolak Moderasi Hak Cipta)</option>
+              </select>
+            </div>
+
+            <div id="boxStealthOptions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group" style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label class="form-label" for="selSceneCategory" style="font-size:0.85rem; font-weight:700; color:#e2e8f0;">Kategori Scene</label>
+                <select id="selSceneCategory" class="form-select" style="background:#090d16; border:1px solid #1e293b; color:#fff; padding:0.6rem 0.8rem; border-radius:8px; font-size:0.88rem;">
+                  <option value="all" selected>Semua Tema (Acak Alami)</option>
+                  <option value="action">Action & Battle (Boss_Arena, Combat_Zone...)</option>
+                  <option value="cyber">Cyber & Sci-Fi (Cyber_City, Neon_District...)</option>
+                  <option value="fantasy">Fantasy & Adventure (Ancient_Temple, Castle_Ruins...)</option>
+                  <option value="ambient">Chill & Ambient (Main_Lobby, Sunset_Breeze...)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label class="form-label" for="inpAliasPrefix" style="font-size:0.85rem; font-weight:700; color:#e2e8f0;">Prefix Aset</label>
+                <input type="text" id="inpAliasPrefix" value="BGM" placeholder="BGM" style="background:#090d16; border:1px solid #1e293b; color:#fff; padding:0.6rem 0.8rem; border-radius:8px; font-size:0.88rem;" />
+              </div>
+            </div>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkPartNumber" checked />
+              <div class="checkbox-text-wrap">
+                <span class="checkbox-main-text">Nomor Part (_Part1, _Part2)</span>
+                <span class="checkbox-sub-text">Sertakan akhiran nomor part agar memudahkan pengurutan di Roblox Studio.</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="naming-preview-box" style="margin-top: 1rem;">
+            <span class="naming-preview-tag">Preview Nama yang Diterima Roblox</span>
+            <div id="namingPreview" class="naming-preview-code">
+              BGM_Cyber_City_Part1<br>
+              BGM_Cyber_City_Part2
+            </div>
+            <span class="naming-preview-hint">✓ Roblox hanya menerima nama scene musik game alami di atas. Judul asli lagu tetap tersimpan lengkap di Riwayat dan Ekspor Anda.</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================
+       MODAL: ADD / EDIT ROBLOX ACCOUNT
+       ========================================== -->
+  <div id="modalAccount" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Add Roblox API Account</h3>
+        <button type="button" id="btnCloseModal" class="btn-close-modal">✕</button>
+      </div>
+
+      <form id="formAccount" style="display: flex; flex-direction: column; gap: 1rem;">
+        <input type="hidden" id="accEditId" />
+
+        <div class="modal-form-col">
+          <label class="modal-label" for="accNameInput">Account Label / Name</label>
+          <input type="text" id="accNameInput" class="modal-input" placeholder="e.g. Momygze / Main Account" required />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="modal-form-col">
+            <label class="modal-label" for="accCreatorType">Creator Type</label>
+            <select id="accCreatorType" class="modal-input">
+              <option value="user">User ID</option>
+              <option value="group">Group ID</option>
+            </select>
+          </div>
+          <div class="modal-form-col">
+            <label class="modal-label" for="accCreatorId">Target ID (User/Group)</label>
+            <input type="text" id="accCreatorId" class="modal-input" placeholder="e.g. 283131443" />
+          </div>
+        </div>
+
+        <div class="modal-form-col">
+          <label class="modal-label" for="accApiKey">Open Cloud API Key</label>
+          <input type="text" id="accApiKey" class="modal-input" placeholder="Tempel API Key Open Cloud di sini..." required />
+          <span style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;">
+            Dibutuhkan izin: <b>asset:read</b> dan <b>asset:write</b> pada Open Cloud.
+          </span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btnCancelModal" class="btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn-modal-save">Simpan Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast-container"></div>
+
+  <!-- Standalone Pure Vanilla Audio & Zip Libraries (Local first with CDN fallback for 100% portability) -->
+  <script src="./src/libs/jszip.min.js"></script>
+  <script>
+    if (!window.JSZip) {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>');
+    }
+  </script>
+  <script src="./src/libs/WasmMediaEncoder.min.js"></script>
+  <script>
+    if (!window.WasmMediaEncoder) {
+      document.write('<script src="https://unpkg.com/wasm-media-encoders@0.7.0/dist/umd/WasmMediaEncoder.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- Modular Scripts loaded in proper dependency order -->
+  <script src="./src/js/alias-generator.js?v=20"></script>
+  <script src="./src/js/storage.js?v=20"></script>
+  <script src="./src/js/toast.js?v=20"></script>
+  <script src="./src/js/navigation.js?v=20"></script>
+  <script src="./src/js/waveform.js?v=20"></script>
+  <script src="./src/js/audio-engine.js?v=20"></script>
+  <script src="./src/js/roblox-api.js?v=20"></script>
+  <script src="./src/js/history.js?v=20"></script>
+  <script src="./src/js/youtube.js?v=20"></script>
+  <script src="./src/js/tracklist.js?v=20"></script>
+  <script src="./src/js/main.js?v=20"></script>
+</body>
+</html>

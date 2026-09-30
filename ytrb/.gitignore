@@ -1,0 +1,7 @@
+# Local credential and cache protection
+data/accounts.json
+data/audio/
+.cache_audio/
+__pycache__/
+*.pyc
+.DS_Store

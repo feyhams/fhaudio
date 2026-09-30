@@ -1,0 +1,13 @@
+{
+  "namingMode": "stealth_scene",
+  "aliasPrefix": "BGM",
+  "sceneCategory": "all",
+  "includeSongName": true,
+  "includePartNumber": true,
+  "defaultPresetSpeed": 2.3,
+  "defaultAmplification": -4,
+  "defaultQuality": 10,
+  "defaultMaxDuration": 250,
+  "uploadGatewayUrl": "",
+  "autoUploadAfterConvert": false
+}
