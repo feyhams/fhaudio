@@ -1669,6 +1669,34 @@ html, body {
   gap: 0.65rem;
 }
 
+.btn-open-in-studio {
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  color: #facc15;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: var(--transition);
+}
+
+.btn-open-in-studio:hover {
+  background: rgba(250, 204, 21, 0.22);
+  border-color: #fde047;
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.25);
+  color: #ffffff;
+}
+
+.btn-part-reconvert:hover {
+  background: rgba(250, 204, 21, 0.25) !important;
+  border-color: #fde047 !important;
+  color: #ffffff !important;
+}
+
 .btn-preview-real-song {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.35);

@@ -339,6 +339,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.displayTrackInStudio = displayTrackInStudio;
 
+  async function loadTrackIntoStudio(historyItem) {
+    if (!historyItem) return false;
+    try {
+      window.showToast(`⏳ Mengambil audio master "${historyItem.title || 'Track'}"...`);
+      const blob = await window.FHStorage.getOriginalBlob(historyItem.id);
+      if (!blob) {
+        alert('Berkas audio master asli tidak ditemukan di penyimpanan lokal.');
+        return false;
+      }
+      const ctx = window.FHAudioEngine.getAudioContext();
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+      if (window.FHAudioEngine) {
+        window.FHAudioEngine.pendingOriginalBlob = blob;
+        window.FHAudioEngine.sourceUrl = historyItem.sourceUrl || '';
+      }
+
+      if (sliderSpeed && historyItem.speed) {
+        sliderSpeed.value = historyItem.speed;
+        if (valSpeed) valSpeed.textContent = `${parseFloat(historyItem.speed).toFixed(1)}x`;
+      }
+      if (sliderAmp && historyItem.volumeDb !== undefined) {
+        sliderAmp.value = historyItem.volumeDb;
+        if (valAmp) valAmp.textContent = `${historyItem.volumeDb} dB`;
+      }
+      if (sliderQuality && historyItem.quality) {
+        sliderQuality.value = historyItem.quality;
+        if (valQuality) valQuality.textContent = `${historyItem.quality}`;
+      }
+      if (sliderMaxDuration && historyItem.maxPartDuration) {
+        sliderMaxDuration.value = historyItem.maxPartDuration;
+        if (valMaxDuration) valMaxDuration.textContent = `${historyItem.maxPartDuration}s`;
+      }
+
+      displayTrackInStudio(audioBuffer, historyItem.title || 'Audio Track', historyItem.thumbnail);
+
+      if (typeof window.switchTab === 'function') {
+        window.switchTab('bypass');
+      }
+
+      const waveEl = document.getElementById('waveformCard');
+      if (waveEl) {
+        waveEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      window.showToast(`✓ Master "${historyItem.title}" dibuka di Studio! Ubah speed atau volume lalu klik Convert & Split.`);
+      return true;
+    } catch (err) {
+      console.error('Error loading track into studio:', err);
+      alert('Gagal membuka audio ke studio: ' + (err.message || err));
+      return false;
+    }
+  }
+
+  window.loadTrackIntoStudio = loadTrackIntoStudio;
+
   // Source Title Inline Edit Handlers
   function enableSourceTitleEdit() {
     if (!sourceTitle || !sourceTitleInput) return;

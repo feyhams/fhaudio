@@ -161,6 +161,10 @@ function initHistoryModule() {
             </div>
           </div>
           <div class="history-card-top-right">
+            <button type="button" class="btn-open-in-studio" data-id="${item.id}" title="Buka master audio lagu ini ke Studio untuk atur ulang speed/volume & konversi ulang">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 1-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <span>Buka di Studio</span>
+            </button>
             <button type="button" class="btn-preview-real-song" data-id="${item.id}" title="Dengarkan lagu asli pada kecepatan normal (1.0x / Simulasi Roblox)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
               <span>Real Song</span>
@@ -215,6 +219,16 @@ function initHistoryModule() {
           if (updated) {
             renderHistoryDashboard();
             window.showToast(`Scene Roblox diubah ke: "${updated.sceneAlias}"`);
+          }
+        });
+      }
+
+      // Wire Open in Studio
+      const openStudioBtn = card.querySelector('.btn-open-in-studio');
+      if (openStudioBtn) {
+        openStudioBtn.addEventListener('click', () => {
+          if (typeof window.loadTrackIntoStudio === 'function') {
+            window.loadTrackIntoStudio(item);
           }
         });
       }
@@ -279,6 +293,7 @@ function initHistoryModule() {
             <span class="status-pill rejected" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); font-weight: 800;">
               DITOLAK ROBLOX ✕
             </span>
+            <button type="button" class="btn-part-reconvert" data-id="${item.id}" style="background: rgba(250, 204, 21, 0.15); border: 1px solid rgba(250, 204, 21, 0.35); color: #facc15; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.85rem; border-radius: 8px; cursor: pointer;" title="Buka lagu ini ke Studio untuk ubah setting speed/volume agar lolos moderasi">↺ Buka di Studio</button>
             <button type="button" class="btn-part-upload" style="background: rgba(239, 68, 68, 0.25); border: 1px solid rgba(239, 68, 68, 0.45); color: #fff; font-size: 0.8rem; padding: 0.4rem 0.85rem;" title="Ganti nama alias scene dan upload ulang ke Roblox">🎲 Ganti Scene & Upload Ulang</button>
           `;
         } else if (hasAssetId && status === 'approved') {
@@ -369,6 +384,16 @@ function initHistoryModule() {
         if (uploadBtn) {
           uploadBtn.addEventListener('click', () => {
             executeRobloxUpload(item, part.partNum, uploadBtn);
+          });
+        }
+
+        // Action 4b: Reconvert in Studio
+        const reconvertPartBtn = partRow.querySelector('.btn-part-reconvert');
+        if (reconvertPartBtn) {
+          reconvertPartBtn.addEventListener('click', () => {
+            if (typeof window.loadTrackIntoStudio === 'function') {
+              window.loadTrackIntoStudio(item);
+            }
           });
         }
 
