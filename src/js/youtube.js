@@ -45,6 +45,8 @@ function initYoutubeModule() {
     if (fetchErrorBox) fetchErrorBox.style.display = 'none';
   }
 
+  const btnFetchCopyPs = document.getElementById('btnFetchCopyPs');
+
   if (btnFetchDismiss) {
     btnFetchDismiss.addEventListener('click', hideFetchProgress);
   }
@@ -52,6 +54,12 @@ function initYoutubeModule() {
   if (btnFetchDownloadBat) {
     btnFetchDownloadBat.addEventListener('click', () => {
       generateDownloadBatScript(currentFailedTitle || 'audio', currentFailedUrl || '');
+    });
+  }
+
+  if (btnFetchCopyPs) {
+    btnFetchCopyPs.addEventListener('click', () => {
+      copyPowerShellDownloadCommand(currentFailedTitle || 'audio', currentFailedUrl || '');
     });
   }
 
@@ -248,22 +256,16 @@ function initYoutubeModule() {
         window.showToast(`✓ Audio asli "${title}" berhasil dimuat & siap dipotong!`);
         setTimeout(hideFetchProgress, 1800);
       } else {
-        // Fallback: create buffer preview so waveform and trimmer immediately appear in Studio without blocking!
-        if (window.FHAudioEngine && typeof window.FHAudioEngine.createSyntheticBuffer === 'function') {
-          audioBuffer = window.FHAudioEngine.createSyntheticBuffer(trackDuration || 185.4, title);
-          if (window.FHAudioEngine) {
-            window.FHAudioEngine.sourceUrl = targetDownloadUrl;
-          }
-          if (typeof window.displayTrackInStudio === 'function') {
-            window.displayTrackInStudio(audioBuffer, finalFileName, thumb);
-          }
-          setFetchProgress(100, `Waveform studio aktif untuk "${title.substring(0, 32)}..."`, 'success');
-          window.showToast(`Waveform studio aktif untuk "${title}".`);
-          setTimeout(hideFetchProgress, 2000);
-        } else {
-          hideFetchProgress();
-          window.showToast(`Gagal memuat audio YouTube. Pastikan server lokal aktif.`);
+        // Real audio could not be downloaded via direct server bridge (e.g. running on GitHub Pages cloud without local yt-dlp)
+        currentFailedTitle = title;
+        currentFailedUrl = targetDownloadUrl;
+        setFetchProgress(0, 'Download langsung YouTube memerlukan server lokal atau script download.', 'error');
+        if (fetchErrorText) {
+          fetchErrorText.textContent = window.location.hostname.includes('github.io')
+            ? 'Hosting cloud GitHub Pages tidak memiliki backend yt-dlp. Unduh audio via .bat / PowerShell, atau gunakan versi lokal (Buka FH Audio.bat).'
+            : 'Gagal mendownload audio dari YouTube. Pastikan server lokal aktif atau unduh via script .bat.';
         }
+        window.showToast('Gunakan Unduh Script (.bat) atau jalankan versi lokal (Buka FH Audio.bat).');
       }
 
     } catch (err) {
@@ -322,6 +324,20 @@ exit /b
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(downloadUrl);
+  }
+
+  function copyPowerShellDownloadCommand(title, videoUrl) {
+    const targetUrl = videoUrl || (urlInput ? urlInput.value.trim() : '');
+    const cmd = `yt-dlp --windows-filenames -x --audio-format mp3 --audio-quality 0 "${targetUrl}" -P "$HOME\\Downloads" -o "%(title)s.%(ext)s"`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cmd).then(() => {
+        window.showToast('✓ Perintah PowerShell disalin! Tempel di terminal PowerShell lalu Enter.');
+      }).catch(() => {
+        prompt('Salin perintah PowerShell berikut:', cmd);
+      });
+    } else {
+      prompt('Salin perintah PowerShell berikut:', cmd);
+    }
   }
 
   if (btnFetch) btnFetch.addEventListener('click', fetchMediaUrl);
