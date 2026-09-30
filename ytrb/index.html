@@ -11,8 +11,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="./src/assets/logo.png" />
+
   <!-- Main Styling -->
-  <link rel="stylesheet" href="./src/styles/main.css?v=5" />
+  <link rel="stylesheet" href="./src/styles/main.css?v=8" />
 </head>
 <body>
 
@@ -23,10 +26,7 @@
     <aside class="sidebar">
       <div class="brand-section">
         <div class="brand-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
+          <img src="./src/assets/logo.png" alt="FH Logo" class="brand-logo-img" />
         </div>
         <div class="brand-text">
           <div class="brand-title">FH <span>Audio V2</span></div>
@@ -73,6 +73,20 @@
          MAIN CONTENT AREA
          ========================================== -->
     <main class="main-content custom-scroll">
+
+      <!-- Mobile Top Brand Bar (Visible only on <= 768px) -->
+      <header class="mobile-top-header">
+        <div class="mobile-brand-wrap">
+          <div class="brand-icon mobile">
+            <img src="./src/assets/logo.png" alt="FH Logo" class="brand-logo-img" />
+          </div>
+          <div class="mobile-brand-title">FH <span>AUDIO</span> <span class="mobile-v2-badge">V2</span></div>
+        </div>
+        <div class="mobile-status-tag" id="mobileStatusTag" title="Engine Status">
+          <span class="status-indicator-dot"></span>
+          <span>ONLINE</span>
+        </div>
+      </header>
 
       <!-- ==========================================
            TAB 1: BYPASS AUDIO

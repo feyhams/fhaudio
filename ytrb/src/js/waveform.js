@@ -166,6 +166,8 @@ class WaveformTrimmer {
 
   setStartTime(time) {
     this.startTime = Math.max(0, Math.min(time, this.endTime - 0.5));
+    // Always keep playhead aligned to start cut handle so playback begins from start!
+    this.currentTime = this.startTime;
     this.draw();
     this.triggerTrimChange();
   }
@@ -243,9 +245,14 @@ class WaveformTrimmer {
         const isSelected = x >= startX && x <= endX;
 
         if (isSelected) {
-          ctx.fillStyle = '#facc15'; // Vibrant gold
+          // Vibrant Cyan to Gold gradient across selected area matching mockup
+          const normPos = Math.max(0, Math.min(1, (x - startX) / Math.max(1, endX - startX)));
+          const r = Math.round(56 + normPos * (250 - 56));
+          const g = Math.round(189 + normPos * (204 - 189));
+          const b = Math.round(248 + normPos * (21 - 248));
+          ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         } else {
-          ctx.fillStyle = 'rgba(250, 204, 21, 0.2)'; // Dim gold
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.2)'; // Dim slate
         }
 
         ctx.beginPath();
@@ -364,14 +371,21 @@ class WaveformTrimmer {
   initEvents() {
     if (!this.canvas) return;
 
+    let hasMoved = false;
+    let downX = 0;
+    let downClientX = 0;
+
     const handlePointerDown = (e) => {
       if (!this.audioBuffer) return;
       const rect = this.canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
+      downX = x;
+      downClientX = e.clientX;
+      hasMoved = false;
+
       const startX = this.timeToX(this.startTime);
       const endX = this.timeToX(this.endTime);
-
-      const hitDist = 15;
+      const hitDist = (e.pointerType === 'touch') ? 26 : 16;
 
       if (Math.abs(x - startX) <= hitDist) {
         this.dragTarget = 'start';
@@ -383,14 +397,13 @@ class WaveformTrimmer {
         this.dragInitialStart = this.startTime;
         this.dragInitialEnd = this.endTime;
       } else {
-        // Seek playhead directly
+        this.dragTarget = 'seek';
         const clickedTime = this.xToTime(x);
         this.currentTime = clickedTime;
         if (typeof this.onSeek === 'function') {
           this.onSeek(clickedTime);
         }
         this.draw();
-        return;
       }
 
       window.addEventListener('pointermove', handlePointerMove);
@@ -399,15 +412,26 @@ class WaveformTrimmer {
 
     const handlePointerMove = (e) => {
       if (!this.dragTarget) return;
+      if (Math.abs(e.clientX - downClientX) > 4) {
+        hasMoved = true;
+      }
+
       const rect = this.canvas.getBoundingClientRect();
       const x = Math.max(0, Math.min(this.width, e.clientX - rect.left));
       const targetTime = this.xToTime(x);
 
       if (this.dragTarget === 'start') {
         this.startTime = Math.max(0, Math.min(targetTime, this.endTime - 0.5));
+        // Keep playhead glued to the start handle while dragging start!
+        this.currentTime = this.startTime;
+        this.draw();
+        this.triggerTrimChange();
       } else if (this.dragTarget === 'end') {
         this.endTime = Math.min(this.totalDuration, Math.max(targetTime, this.startTime + 0.5));
+        this.draw();
+        this.triggerTrimChange();
       } else if (this.dragTarget === 'middle') {
+        if (!hasMoved) return;
         const deltaX = x - this.dragStartX;
         const deltaTime = (deltaX / this.width) * this.totalDuration;
         const dur = this.dragInitialEnd - this.dragInitialStart;
@@ -425,14 +449,28 @@ class WaveformTrimmer {
 
         this.startTime = newStart;
         this.endTime = newEnd;
+        this.draw();
+        this.triggerTrimChange();
+      } else if (this.dragTarget === 'seek') {
+        this.currentTime = targetTime;
+        if (typeof this.onSeek === 'function') {
+          this.onSeek(targetTime);
+        }
+        this.draw();
       }
-
-      this.draw();
-      this.triggerTrimChange();
     };
 
     const handlePointerUp = () => {
+      if (!hasMoved && (this.dragTarget === 'middle' || this.dragTarget === 'seek')) {
+        const clickedTime = this.xToTime(downX);
+        this.currentTime = clickedTime;
+        if (typeof this.onSeek === 'function') {
+          this.onSeek(clickedTime);
+        }
+        this.draw();
+      }
       this.dragTarget = null;
+      hasMoved = false;
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };

@@ -245,9 +245,14 @@ class WaveformTrimmer {
         const isSelected = x >= startX && x <= endX;
 
         if (isSelected) {
-          ctx.fillStyle = '#facc15'; // Vibrant gold
+          // Vibrant Cyan to Gold gradient across selected area matching mockup
+          const normPos = Math.max(0, Math.min(1, (x - startX) / Math.max(1, endX - startX)));
+          const r = Math.round(56 + normPos * (250 - 56));
+          const g = Math.round(189 + normPos * (204 - 189));
+          const b = Math.round(248 + normPos * (21 - 248));
+          ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         } else {
-          ctx.fillStyle = 'rgba(250, 204, 21, 0.2)'; // Dim gold
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.2)'; // Dim slate
         }
 
         ctx.beginPath();
@@ -380,7 +385,7 @@ class WaveformTrimmer {
 
       const startX = this.timeToX(this.startTime);
       const endX = this.timeToX(this.endTime);
-      const hitDist = 15;
+      const hitDist = (e.pointerType === 'touch') ? 26 : 16;
 
       if (Math.abs(x - startX) <= hitDist) {
         this.dragTarget = 'start';
