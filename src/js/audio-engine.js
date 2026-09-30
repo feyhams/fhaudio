@@ -264,7 +264,7 @@ class AudioEngine {
 
           encoder.configure({
             channels: numChannels,
-            sampleRate: 44100,
+            sampleRate: sampleRate,
             vbrQuality: vorbisQ
           });
         } else if (format === 'mp3') {
@@ -280,7 +280,7 @@ class AudioEngine {
 
           encoder.configure({
             channels: numChannels,
-            sampleRate: 44100,
+            sampleRate: sampleRate,
             bitrate: 192
           });
         }
@@ -290,10 +290,28 @@ class AudioEngine {
           for (let c = 0; c < numChannels; c++) {
             channelData.push(audioBuffer.getChannelData(c));
           }
-          const encodedChunks = encoder.encode(channelData);
+
+          const chunks = [];
+          const chunkSize = 44100;
+          for (let i = 0; i < length; i += chunkSize) {
+            const end = Math.min(i + chunkSize, length);
+            const slice = [];
+            for (let c = 0; c < numChannels; c++) {
+              slice.push(channelData[c].subarray(i, end));
+            }
+            const encOut = encoder.encode(slice);
+            if (encOut && encOut.length > 0) {
+              chunks.push(new Uint8Array(encOut));
+            }
+          }
+
           const finalChunks = encoder.finalize();
+          if (finalChunks && finalChunks.length > 0) {
+            chunks.push(new Uint8Array(finalChunks));
+          }
+
           const mimeType = format === 'ogg' ? 'audio/ogg' : 'audio/mpeg';
-          return new Blob([encodedChunks, finalChunks], { type: mimeType });
+          return new Blob(chunks, { type: mimeType });
         }
       } catch (err) {
         console.warn('Wasm encoder error, falling back to WAV:', err);

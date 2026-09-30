@@ -328,7 +328,16 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
 
                 audio_bytes = base64.b64decode(audio_base64) if audio_base64 else b''
                 os.makedirs(CACHE_DIR, exist_ok=True)
-                temp_audio_path = os.path.join(CACHE_DIR, 'temp_upload.ogg')
+                ext = 'ogg'
+                mime_type = 'audio/ogg'
+                if audio_bytes.startswith(b'ID3') or (len(audio_bytes) > 2 and audio_bytes[0] == 0xFF and (audio_bytes[1] & 0xE0) == 0xE0):
+                    ext = 'mp3'
+                    mime_type = 'audio/mpeg'
+                elif audio_bytes.startswith(b'fLaC'):
+                    ext = 'flac'
+                    mime_type = 'audio/flac'
+
+                temp_audio_path = os.path.join(CACHE_DIR, f'temp_upload.{ext}')
                 with open(temp_audio_path, 'wb') as tf:
                     tf.write(audio_bytes)
 
@@ -349,7 +358,7 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                     'curl.exe', '-s', '-X', 'POST', 'https://apis.roblox.com/assets/v1/assets',
                     '-H', f'x-api-key: {api_key}',
                     '-F', f'request={json_meta};type=application/json',
-                    '-F', f'fileContent=@{temp_audio_path};type=audio/ogg'
+                    '-F', f'fileContent=@{temp_audio_path};type={mime_type}'
                 ]
 
                 res = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=30)
@@ -369,6 +378,17 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                         try:
                             chk_json = json.loads(chk_res.stdout)
                             if chk_json.get('done'):
+                                err_obj = chk_json.get('error')
+                                if err_obj:
+                                    err_msg = err_obj.get('message', 'Upload rejected by Roblox')
+                                    self.send_json({
+                                        "success": False,
+                                        "error": f"Roblox Error: {err_msg}",
+                                        "status": "rejected",
+                                        "operationPath": op_path
+                                    })
+                                    return
+
                                 resp_obj = chk_json.get('response', {})
                                 asset_id = str(resp_obj.get('assetId', '')).strip()
                                 raw_mod = resp_obj.get('moderationResult', {}).get('moderationState', '')
@@ -405,7 +425,7 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                         "operationPath": op_path
                     })
                 else:
-                    self.send_json({"success": False, "error": err_msg or "Roblox API upload error"}, 400)
+                    self.send_json({"success": False, "error": resp_text or "Roblox API upload error"}, 400)
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
@@ -442,6 +462,19 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                     try:
                         chk_json = json.loads(chk_res.stdout)
                         done = chk_json.get('done', False)
+                        err_obj = chk_json.get('error')
+                        if err_obj:
+                            err_msg = err_obj.get('message', 'Roblox operation failed')
+                            self.send_json({
+                                "success": True,
+                                "done": True,
+                                "assetId": "",
+                                "status": "rejected",
+                                "rawModeration": f"Failed: {err_msg}",
+                                "error": err_msg
+                            })
+                            return
+
                         resp_obj = chk_json.get('response', {})
                         if not asset_id:
                             asset_id = str(resp_obj.get('assetId', '')).strip()
@@ -469,6 +502,8 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                 elif 'approved' in raw_lower:
                     status = 'approved'
                 elif 'rejected' in raw_lower or 'blocked' in raw_lower:
+                    status = 'rejected'
+                elif done and not asset_id:
                     status = 'rejected'
                 else:
                     # Still reviewing or awaiting automated moderation pass

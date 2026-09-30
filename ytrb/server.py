@@ -359,6 +359,20 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                         try:
                             chk_json = json.loads(chk_res.stdout)
                             if chk_json.get('done'):
+                                err_obj = chk_json.get('error')
+                                if err_obj:
+                                    err_msg = err_obj.get('message', 'Upload rejected by Roblox')
+                                    self.send_response(200)
+                                    self.send_header('Content-Type', 'application/json')
+                                    self.end_headers()
+                                    self.wfile.write(json.dumps({
+                                        "success": False,
+                                        "error": f"Roblox Error: {err_msg}",
+                                        "status": "rejected",
+                                        "operationPath": op_path
+                                    }).encode())
+                                    return
+
                                 resp_obj = chk_json.get('response', {})
                                 asset_id = resp_obj.get('assetId', '')
                                 raw_mod = resp_obj.get('moderationResult', {}).get('moderationState', '')
@@ -430,6 +444,21 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                 try:
                     chk_json = json.loads(chk_res.stdout)
                     done = chk_json.get('done', False)
+                    err_obj = chk_json.get('error')
+                    if err_obj:
+                        err_msg = err_obj.get('message', 'Roblox operation failed')
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "success": True,
+                            "done": True,
+                            "assetId": "",
+                            "status": "rejected",
+                            "error": err_msg
+                        }).encode())
+                        return
+
                     resp_obj = chk_json.get('response', {})
                     asset_id = resp_obj.get('assetId', '')
                     raw_mod = resp_obj.get('moderationResult', {}).get('moderationState', '')
