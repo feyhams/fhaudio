@@ -106,7 +106,8 @@ async function syncWithServer() {
       const serverAccounts = await accResp.json();
       const localAccounts = getAccounts();
       if (Array.isArray(serverAccounts) && serverAccounts.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(serverAccounts));
+        const cleanedServer = serverAccounts.filter(a => a && a.name !== 'Momygze' && a.name !== 'erlangaudio' && a.apiKey !== 'Aaze7719462810SHc=');
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cleanedServer));
       } else if (localAccounts.length > 0) {
         pushAccountsToServer(localAccounts);
       }
@@ -168,22 +169,18 @@ function getAccounts() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
     if (!raw) {
-      // Default initial sample account for nice UI display if completely empty
-      const sample = [
-        {
-          id: 'acc_' + Date.now(),
-          name: 'Momygze',
-          creatorType: 'group', // 'user' or 'group'
-          creatorId: '283131443',
-          apiKey: 'Aaze7719462810SHc=',
-          isActive: true,
-          createdAt: new Date().toISOString()
-        }
-      ];
-      localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(sample));
-      return sample;
+      return [];
     }
-    return JSON.parse(raw);
+    const accounts = JSON.parse(raw);
+    if (Array.isArray(accounts)) {
+      // Clean up any old sample / dummy accounts
+      const cleaned = accounts.filter(a => a && a.name !== 'Momygze' && a.name !== 'erlangaudio' && a.apiKey !== 'Aaze7719462810SHc=');
+      if (cleaned.length !== accounts.length) {
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cleaned));
+      }
+      return cleaned;
+    }
+    return [];
   } catch (e) {
     return [];
   }
