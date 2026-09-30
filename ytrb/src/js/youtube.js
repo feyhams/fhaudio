@@ -181,7 +181,8 @@ function initYoutubeModule() {
   }
 
   function generateDownloadBatScript(title, videoUrl) {
-    const cleanTitle = (title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+    const cleanFileTitle = (title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+    const safeDisplayTitle = (title || 'Audio YouTube').replace(/[&|<>^%]/g, ' ').replace(/\s+/g, ' ').trim();
     const batContent = `@echo off
 setlocal EnableExtensions
 title FH Audio - YouTube Downloader
@@ -189,7 +190,7 @@ color 0e
 
 echo ====================================================================
 echo  FH AUDIO - PENGUNDUH AUDIO YOUTUBE (yt-dlp)
-echo  Judul : ${title}
+echo  Judul : ${safeDisplayTitle}
 echo ====================================================================
 echo.
 
@@ -205,13 +206,20 @@ if %errorlevel% neq 0 (
 )
 
 echo Mengunduh audio langsung ke folder Downloads (%USERPROFILE%\\Downloads)...
-"%YTDLP%" --windows-filenames -x --audio-format mp3 --audio-quality 0 "${videoUrl}" -P "%USERPROFILE%/Downloads" -o "%(title)s.%(ext)s"
+where ffmpeg >nul 2>nul
+if %errorlevel% equ 0 (
+    "%YTDLP%" --windows-filenames -x --audio-format mp3 --audio-quality 0 "${videoUrl}" -P "%USERPROFILE%\\Downloads" -o "%%(title)s.%%(ext)s"
+) else (
+    "%YTDLP%" --windows-filenames -f "ba/b" --no-playlist "${videoUrl}" -P "%USERPROFILE%\\Downloads" -o "%%(title)s.%%(ext)s"
+)
 
 echo.
-echo Selesai! Berkas tersimpan di folder Downloads.
-echo Buka kembali FH Audio dan seret file MP3 tersebut ke kotak 'Bypass Audio'.
+echo ====================================================================
+echo  Selesai! Berkas audio tersimpan di folder Downloads.
+echo  Buka kembali FH Audio dan seret berkas tersebut ke 'Bypass Audio'.
+echo ====================================================================
 start "" explorer.exe "%USERPROFILE%\\Downloads"
-pause >nul
+pause
 exit /b
 `;
 
@@ -219,7 +227,7 @@ exit /b
     const downloadUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = `unduh_${cleanTitle}.bat`;
+    a.download = `unduh_${cleanFileTitle}.bat`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
