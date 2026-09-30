@@ -37,18 +37,36 @@ class WaveformTrimmer {
     window.addEventListener('resize', () => {
       this.resizeCanvas();
       this.draw();
+      this.renderRuler('waveformRuler');
     });
+
+    if (window.ResizeObserver && this.container) {
+      this.resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const cr = entry.contentRect;
+          if (cr && cr.width > 0 && cr.height > 0) {
+            this.resizeCanvas();
+            this.draw();
+            this.renderRuler('waveformRuler');
+          }
+        }
+      });
+      this.resizeObserver.observe(this.container);
+    }
   }
 
   resizeCanvas() {
-    if (!this.canvas || !this.container) return;
+    if (!this.canvas || !this.container) return false;
     const rect = this.container.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+
     const dpr = window.devicePixelRatio || 1;
     this.width = rect.width;
     this.height = rect.height;
-    this.canvas.width = this.width * dpr;
-    this.canvas.height = this.height * dpr;
-    this.ctx.scale(dpr, dpr);
+    this.canvas.width = Math.round(this.width * dpr);
+    this.canvas.height = Math.round(this.height * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return true;
   }
 
   loadAudioBuffer(audioBuffer) {
@@ -58,12 +76,29 @@ class WaveformTrimmer {
     this.endTime = audioBuffer.duration;
     this.currentTime = 0;
 
-    // Extract peaks
+    // Extract peaks with automatic normalization
     this.extractPeaks();
     this.resizeCanvas();
     this.renderRuler('waveformRuler');
     this.draw();
     this.triggerTrimChange();
+
+    // Redraw on subsequent animation frames to guarantee layout reflow
+    requestAnimationFrame(() => {
+      this.resizeCanvas();
+      this.draw();
+      this.renderRuler('waveformRuler');
+    });
+    setTimeout(() => {
+      this.resizeCanvas();
+      this.draw();
+      this.renderRuler('waveformRuler');
+    }, 80);
+    setTimeout(() => {
+      this.resizeCanvas();
+      this.draw();
+      this.renderRuler('waveformRuler');
+    }, 250);
   }
 
   renderRuler(rulerId = 'waveformRuler') {
@@ -87,17 +122,26 @@ class WaveformTrimmer {
   extractPeaks() {
     if (!this.audioBuffer) return;
     const channelData = this.audioBuffer.getChannelData(0);
-    const step = Math.floor(channelData.length / this.sampleCount);
+    const step = Math.max(1, Math.floor(channelData.length / this.sampleCount));
     this.peaks = [];
 
+    let overallMax = 0.001;
     for (let i = 0; i < this.sampleCount; i++) {
       const start = i * step;
       let max = 0;
-      for (let j = 0; j < step; j += 10) {
+      const subStep = Math.max(1, Math.floor(step / 20));
+      for (let j = 0; j < step && (start + j) < channelData.length; j += subStep) {
         const val = Math.abs(channelData[start + j] || 0);
         if (val > max) max = val;
       }
+      if (max > overallMax) overallMax = max;
       this.peaks.push(max);
+    }
+
+    // Normalize so waveform is visually punchy and never flat/invisible
+    const normFactor = 1 / overallMax;
+    for (let i = 0; i < this.peaks.length; i++) {
+      this.peaks[i] = Math.min(1, this.peaks[i] * normFactor);
     }
   }
 
@@ -153,7 +197,10 @@ class WaveformTrimmer {
   }
 
   draw() {
-    if (!this.ctx || !this.width || !this.height) return;
+    if (!this.ctx) return;
+    if (!this.width || !this.height || this.width <= 0 || this.height <= 0) {
+      if (!this.resizeCanvas()) return;
+    }
     const ctx = this.ctx;
     const w = this.width;
     const h = this.height;

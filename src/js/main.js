@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Initialize Waveform Trimmer
   const trimmer = new window.WaveformTrimmer('waveformCanvas', 'waveformContainer');
+  window.trimmerInstance = trimmer;
 
   trimmer.onTrimChange = (info) => {
     if (inputStartTime) inputStartTime.value = info.formattedStart;
@@ -231,7 +232,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnCirclePlay) {
     btnCirclePlay.addEventListener('click', () => {
-      if (!loadedBuffer) return;
+      if (!loadedBuffer) {
+        window.showToast('Pilih atau unduh file audio terlebih dahulu!');
+        return;
+      }
       if (isTrimmerPlaying) {
         window.FHAudioEngine.stopPlayback();
         setPlayState(false);
@@ -249,7 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRestartStart = document.getElementById('btnRestartStart');
   if (btnRestartStart) {
     btnRestartStart.addEventListener('click', () => {
-      if (!loadedBuffer) return;
+      if (!loadedBuffer) {
+        window.showToast('Pilih atau unduh file audio terlebih dahulu!');
+        return;
+      }
       trimmer.setPlayheadTime(trimmer.startTime);
       if (trimmerCurrTime) trimmerCurrTime.textContent = trimmer.formatTime(trimmer.startTime);
       startTrimmerPlayback(trimmer.startTime);
@@ -269,7 +276,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
     if (e.code === 'Space') {
       e.preventDefault();
-      if (!loadedBuffer) return;
+      if (!loadedBuffer) {
+        window.showToast('Pilih atau unduh file audio terlebih dahulu!');
+        return;
+      }
       if (isTrimmerPlaying) {
         window.FHAudioEngine.stopPlayback();
         setPlayState(false);
@@ -291,14 +301,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Snap to playhead buttons
   if (btnSnapStart) {
     btnSnapStart.addEventListener('click', () => {
+      if (!loadedBuffer) {
+        window.showToast('Pilih atau unduh file audio terlebih dahulu!');
+        return;
+      }
       trimmer.setStartTime(trimmer.currentTime);
-      window.showToast('Start cut diatur ke posisi playhead');
+      window.showToast(`Start cut diatur ke ${trimmer.formatTime(trimmer.startTime)}`);
     });
   }
   if (btnSnapEnd) {
     btnSnapEnd.addEventListener('click', () => {
+      if (!loadedBuffer) {
+        window.showToast('Pilih atau unduh file audio terlebih dahulu!');
+        return;
+      }
       trimmer.setEndTime(trimmer.currentTime);
-      window.showToast('End cut diatur ke posisi playhead');
+      window.showToast(`End cut diatur ke ${trimmer.formatTime(trimmer.endTime)}`);
     });
   }
 
@@ -393,7 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Show Waveform Card & Load Trimmer
-    if (waveformCard) waveformCard.style.display = 'flex';
+    if (waveformCard) {
+      waveformCard.style.display = 'flex';
+    }
     trimmer.loadAudioBuffer(loadedBuffer);
 
     // 4. Update Time Displays & Inputs
@@ -414,6 +434,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.FHTags && typeof window.FHTags.updatePreview === 'function') {
       window.FHTags.updatePreview();
     }
+
+    // Explicit redraw passes to guarantee layout reflow on canvas
+    requestAnimationFrame(() => {
+      trimmer.resizeCanvas();
+      trimmer.draw();
+      trimmer.renderRuler('waveformRuler');
+    });
+    setTimeout(() => {
+      trimmer.resizeCanvas();
+      trimmer.draw();
+      trimmer.renderRuler('waveformRuler');
+    }, 100);
   }
 
   window.displayTrackInStudio = displayTrackInStudio;
@@ -453,11 +485,40 @@ document.addEventListener('DOMContentLoaded', () => {
         if (valMaxDuration) valMaxDuration.textContent = `${historyItem.maxPartDuration}s`;
       }
 
-      displayTrackInStudio(audioBuffer, historyItem.title || 'Audio Track', historyItem.thumbnail);
-
+      // Switch tab FIRST before displayTrackInStudio so DOM is visible & container has non-zero size!
       if (typeof window.switchTab === 'function') {
         window.switchTab('bypass');
       }
+
+      // Ensure Single mode panel is active and visible
+      const btnModeSingle = document.getElementById('btnModeSingle');
+      const btnModeMass = document.getElementById('btnModeMass');
+      const singleConvertPanel = document.getElementById('singleConvertPanel');
+      const massConvertPanel = document.getElementById('massConvertPanel');
+      if (btnModeSingle && singleConvertPanel) {
+        btnModeSingle.classList.add('active');
+        if (btnModeMass) btnModeMass.classList.remove('active');
+        singleConvertPanel.style.display = 'flex';
+        if (massConvertPanel) massConvertPanel.classList.remove('active');
+      }
+
+      displayTrackInStudio(audioBuffer, historyItem.title || 'Audio Track', historyItem.thumbnail);
+
+      // Force multiple rAF/timeouts to guarantee canvas render after CSS transitions
+      requestAnimationFrame(() => {
+        if (trimmer) {
+          trimmer.resizeCanvas();
+          trimmer.draw();
+          trimmer.renderRuler('waveformRuler');
+        }
+      });
+      setTimeout(() => {
+        if (trimmer) {
+          trimmer.resizeCanvas();
+          trimmer.draw();
+          trimmer.renderRuler('waveformRuler');
+        }
+      }, 100);
 
       const waveEl = document.getElementById('waveformCard');
       if (waveEl) {

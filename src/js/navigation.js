@@ -31,6 +31,22 @@ function initNavigation() {
     });
 
     // Refresh view specific components
+    if (targetName === 'bypass') {
+      if (window.trimmerInstance && window.trimmerInstance.audioBuffer) {
+        requestAnimationFrame(() => {
+          window.trimmerInstance.resizeCanvas();
+          window.trimmerInstance.draw();
+          window.trimmerInstance.renderRuler('waveformRuler');
+        });
+        setTimeout(() => {
+          if (window.trimmerInstance) {
+            window.trimmerInstance.resizeCanvas();
+            window.trimmerInstance.draw();
+            window.trimmerInstance.renderRuler('waveformRuler');
+          }
+        }, 100);
+      }
+    }
     if (targetName === 'history' && window.FHHistory && typeof window.FHHistory.renderHistoryDashboard === 'function') {
       window.FHHistory.renderHistoryDashboard();
     }
@@ -59,6 +75,20 @@ function initNavigation() {
       btnModeMass.classList.remove('active');
       if (singleConvertPanel) singleConvertPanel.style.display = 'flex';
       if (massConvertPanel) massConvertPanel.classList.remove('active');
+      if (window.trimmerInstance && window.trimmerInstance.audioBuffer) {
+        requestAnimationFrame(() => {
+          window.trimmerInstance.resizeCanvas();
+          window.trimmerInstance.draw();
+          window.trimmerInstance.renderRuler('waveformRuler');
+        });
+        setTimeout(() => {
+          if (window.trimmerInstance) {
+            window.trimmerInstance.resizeCanvas();
+            window.trimmerInstance.draw();
+            window.trimmerInstance.renderRuler('waveformRuler');
+          }
+        }, 100);
+      }
     });
 
     btnModeMass.addEventListener('click', () => {
