@@ -50,8 +50,13 @@ function initNavigation() {
     if (targetName === 'history' && window.FHHistory && typeof window.FHHistory.renderHistoryDashboard === 'function') {
       window.FHHistory.renderHistoryDashboard();
     }
-    if (targetName === 'settings' && window.FHSettings && typeof window.FHSettings.renderAccountsList === 'function') {
-      window.FHSettings.renderAccountsList();
+    if (targetName === 'settings' && window.FHSettings) {
+      if (typeof window.FHSettings.renderAccountsList === 'function') {
+        window.FHSettings.renderAccountsList();
+      }
+      if (typeof window.FHSettings.updateBackupBadge === 'function') {
+        window.FHSettings.updateBackupBadge();
+      }
     }
   }
 

@@ -730,6 +730,178 @@ function exportHistoryCSV() {
   return true;
 }
 
+// ----------------------------------------------------
+// BACKUP & MULTI-DEVICE SYNC (JSON EXPORT / IMPORT)
+// ----------------------------------------------------
+
+function exportBackup() {
+  try {
+    const history = getHistory();
+    const accounts = getAccounts();
+    const settings = getSettings();
+
+    const data = {
+      app: 'FHAudio',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      history,
+      accounts,
+      settings
+    };
+
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const filename = `fhaudio_backup_${dateStr}.json`;
+
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+    return {
+      success: true,
+      filename,
+      historyCount: history.length,
+      accountsCount: accounts.length
+    };
+  } catch (err) {
+    console.error('Export backup failed:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+function importBackup(jsonStr, mode = 'merge') {
+  let parsed;
+  try {
+    parsed = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+  } catch (e) {
+    return { success: false, error: 'File JSON tidak valid atau rusak.' };
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    return { success: false, error: 'Format data backup tidak sesuai.' };
+  }
+
+  // Support raw history array or standard backup object
+  let incomingHistory = [];
+  let incomingAccounts = [];
+  let incomingSettings = {};
+
+  if (Array.isArray(parsed)) {
+    incomingHistory = parsed;
+  } else {
+    if (Array.isArray(parsed.history)) incomingHistory = parsed.history;
+    if (Array.isArray(parsed.accounts)) incomingAccounts = parsed.accounts;
+    if (parsed.settings && typeof parsed.settings === 'object') incomingSettings = parsed.settings;
+  }
+
+  const currentHistory = getHistory();
+  const currentAccounts = getAccounts();
+  const currentSettings = getSettings();
+
+  let finalHistory = [];
+  let finalAccounts = [];
+  let finalSettings = {};
+  let addedHistoryCount = 0;
+  let addedAccountCount = 0;
+
+  if (mode === 'replace') {
+    finalHistory = incomingHistory;
+    finalAccounts = incomingAccounts;
+    finalSettings = { ...defaultSettings, ...incomingSettings };
+    addedHistoryCount = incomingHistory.length;
+    addedAccountCount = incomingAccounts.length;
+  } else {
+    // Mode 'merge' (default)
+    // 1. Merge History
+    const historyMap = new Map();
+    currentHistory.forEach(item => {
+      if (item && item.id) historyMap.set(item.id, item);
+    });
+
+    incomingHistory.forEach(inItem => {
+      if (!inItem || !inItem.id) return;
+      if (historyMap.has(inItem.id)) {
+        const existing = historyMap.get(inItem.id);
+        const mergedParts = (existing.parts || []).map((p, idx) => {
+          const inPart = inItem.parts && inItem.parts[idx];
+          if (inPart) {
+            return {
+              ...p,
+              assetId: inPart.assetId || p.assetId,
+              moderationStatus: inPart.moderationStatus || p.moderationStatus,
+              viaAccount: inPart.viaAccount || p.viaAccount
+            };
+          }
+          return p;
+        });
+        historyMap.set(inItem.id, {
+          ...existing,
+          ...inItem,
+          parts: mergedParts
+        });
+      } else {
+        historyMap.set(inItem.id, inItem);
+        addedHistoryCount++;
+      }
+    });
+
+    finalHistory = Array.from(historyMap.values());
+    finalHistory.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    // 2. Merge Accounts
+    const accountMap = new Map();
+    currentAccounts.forEach(acc => {
+      if (acc && acc.id) accountMap.set(acc.id, acc);
+    });
+
+    incomingAccounts.forEach(inAcc => {
+      if (!inAcc || !inAcc.apiKey) return;
+      let matchKey = inAcc.id;
+      if (!matchKey) {
+        for (const [k, v] of accountMap.entries()) {
+          if (v.apiKey === inAcc.apiKey) { matchKey = k; break; }
+        }
+      }
+      if (matchKey && accountMap.has(matchKey)) {
+        accountMap.set(matchKey, { ...accountMap.get(matchKey), ...inAcc });
+      } else {
+        const id = inAcc.id || 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        accountMap.set(id, { ...inAcc, id });
+        addedAccountCount++;
+      }
+    });
+
+    finalAccounts = Array.from(accountMap.values());
+    if (finalAccounts.length > 0 && !finalAccounts.some(a => a.isActive)) {
+      finalAccounts[0].isActive = true;
+    }
+
+    // 3. Merge Settings
+    finalSettings = { ...currentSettings, ...incomingSettings };
+  }
+
+  saveHistory(finalHistory);
+  saveAccounts(finalAccounts);
+  saveSettings(finalSettings);
+
+  return {
+    success: true,
+    mode,
+    totalHistory: finalHistory.length,
+    totalAccounts: finalAccounts.length,
+    addedHistoryCount,
+    addedAccountCount
+  };
+}
+
 // Global Export on window
 window.FHStorage = {
   getSettings,
@@ -750,6 +922,8 @@ window.FHStorage = {
   exportHistoryTXT,
   exportHistoryTXTSimple,
   exportHistoryCSV,
+  exportBackup,
+  importBackup,
   savePartBlob,
   getPartBlob,
   saveOriginalBlob,

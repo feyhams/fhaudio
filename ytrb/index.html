@@ -883,6 +883,72 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
             <span class="naming-preview-hint">✓ Roblox hanya menerima nama scene musik game alami di atas. Judul asli lagu tetap tersimpan lengkap di Riwayat dan Ekspor Anda.</span>
           </div>
         </div>
+
+        <!-- Section 3: Backup & Multi-Device Sync -->
+        <div class="settings-card">
+          <div class="settings-header-row">
+            <div>
+              <h2 class="settings-section-title">Cadangan &amp; Sinkronisasi Data</h2>
+              <p class="settings-section-sub">Ekspor dan impor data riwayat lagu, status aset Roblox, akun API, dan pengaturan ke file <code>.json</code>. Fitur ini memungkinkan Anda memindahkan data antar PC, Laptop, dan HP (Vercel) dengan aman tanpa database luar.</p>
+            </div>
+            <div id="backupDataBadge" class="backup-stats-badge">
+              <span>0 Lagu • 0 Akun</span>
+            </div>
+          </div>
+
+          <div class="backup-actions-grid">
+            <!-- Card Ekspor -->
+            <div class="backup-card-action">
+              <div class="backup-action-info">
+                <div class="backup-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="backup-action-title">Ekspor Cadangan</h4>
+                  <p class="backup-action-sub">Unduh file <code>fhaudio_backup.json</code> berisi riwayat lagu, status ID aset, dan akun API yang ada di perangkat ini.</p>
+                </div>
+              </div>
+              <button type="button" id="btnExportBackup" class="btn-backup-export">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Unduh Cadangan (.json)</span>
+              </button>
+            </div>
+
+            <!-- Card Impor -->
+            <div class="backup-card-action">
+              <div class="backup-action-info">
+                <div class="backup-action-icon import">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="backup-action-title">Pulihkan / Impor Cadangan</h4>
+                  <p class="backup-action-sub">Pilih file <code>.json</code> cadangan dari PC/HP lain untuk menyatukan atau mengganti data di perangkat ini.</p>
+                </div>
+              </div>
+
+              <div class="backup-import-controls">
+                <select id="selImportMode" class="form-select backup-mode-select" title="Mode Impor Cadangan">
+                  <option value="merge" selected>➕ Gabungkan (Merge - Tidak menghapus data lama)</option>
+                  <option value="replace">⚠️ Timpa Semua (Replace - Hapus data lokal dan ganti)</option>
+                </select>
+
+                <input type="file" id="inputImportBackup" accept=".json,application/json" style="display:none;" />
+                <button type="button" id="btnTriggerImportBackup" class="btn-backup-import">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <span>Pilih File &amp; Pulihkan</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
     </main>

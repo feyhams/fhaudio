@@ -92,6 +92,7 @@ function initSettingsModule() {
 
   // Render accounts list in settings
   function renderAccountsList() {
+    if (typeof updateBackupBadge === 'function') updateBackupBadge();
     if (!accountsList) return;
     const accounts = window.FHStorage.getAccounts();
     accountsList.innerHTML = '';
@@ -279,12 +280,95 @@ function initSettingsModule() {
   if (inpAliasPrefix) inpAliasPrefix.addEventListener('input', () => updateNamingPreview(true));
   if (chkPartNumber) chkPartNumber.addEventListener('change', () => updateNamingPreview(true));
 
+  // ----------------------------------------------------
+  // Backup & Multi-Device Sync
+  // ----------------------------------------------------
+  const btnExportBackup = document.getElementById('btnExportBackup');
+  const btnTriggerImportBackup = document.getElementById('btnTriggerImportBackup');
+  const inputImportBackup = document.getElementById('inputImportBackup');
+  const selImportMode = document.getElementById('selImportMode');
+
+  function updateBackupBadge() {
+    const badge = document.getElementById('backupDataBadge');
+    if (!badge) return;
+    const hist = window.FHStorage ? window.FHStorage.getHistory() : [];
+    const accs = window.FHStorage ? window.FHStorage.getAccounts() : [];
+    badge.innerHTML = `<span>${hist.length} Lagu • ${accs.length} Akun</span>`;
+  }
+
+  if (btnExportBackup) {
+    btnExportBackup.addEventListener('click', () => {
+      if (!window.FHStorage) return;
+      const res = window.FHStorage.exportBackup();
+      if (res && res.success) {
+        if (window.showToast) {
+          window.showToast(`✓ Berhasil mengekspor cadangan (${res.historyCount} lagu, ${res.accountsCount} akun)!`);
+        }
+      } else {
+        if (window.showToast) {
+          window.showToast(res?.error || 'Gagal mengekspor data cadangan.', 'error');
+        }
+      }
+    });
+  }
+
+  if (btnTriggerImportBackup && inputImportBackup) {
+    btnTriggerImportBackup.addEventListener('click', () => {
+      inputImportBackup.value = '';
+      inputImportBackup.click();
+    });
+
+    inputImportBackup.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const mode = selImportMode ? selImportMode.value : 'merge';
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const content = event.target.result;
+          if (!window.FHStorage) return;
+          const res = window.FHStorage.importBackup(content, mode);
+          if (res && res.success) {
+            updateBackupBadge();
+            renderAccountsList();
+            if (window.FHHistory && typeof window.FHHistory.renderHistoryDashboard === 'function') {
+              window.FHHistory.renderHistoryDashboard();
+            }
+            // Update preview and naming inputs if settings were updated
+            const updatedSettings = window.FHStorage.getSettings();
+            if (selNamingMode && updatedSettings.namingMode) selNamingMode.value = updatedSettings.namingMode;
+            if (selSceneCategory && updatedSettings.sceneCategory) selSceneCategory.value = updatedSettings.sceneCategory;
+            if (inpAliasPrefix && updatedSettings.aliasPrefix) inpAliasPrefix.value = updatedSettings.aliasPrefix;
+            if (chkPartNumber && updatedSettings.includePartNumber !== undefined) chkPartNumber.checked = updatedSettings.includePartNumber;
+            updateNamingPreview(false);
+
+            const msg = mode === 'replace' 
+              ? `✓ Cadangan berhasil dipulihkan! Total ${res.totalHistory} lagu & ${res.totalAccounts} akun.`
+              : `✓ Cadangan digabungkan! +${res.addedHistoryCount} lagu baru, +${res.addedAccountCount} akun baru (Total: ${res.totalHistory} lagu).`;
+            if (window.showToast) window.showToast(msg);
+          } else {
+            if (window.showToast) window.showToast(res?.error || 'Gagal memulihkan cadangan.', 'error');
+          }
+        } catch (err) {
+          if (window.showToast) window.showToast('Gagal membaca file JSON: ' + err.message, 'error');
+        }
+      };
+      reader.onerror = () => {
+        if (window.showToast) window.showToast('Terjadi kesalahan saat membaca file.', 'error');
+      };
+      reader.readAsText(file);
+    });
+  }
+
   // Initialize display without saving or triggering server disk writes
   updateNamingPreview(false);
   renderAccountsList();
+  updateBackupBadge();
 
   window.FHSettings = {
     renderAccountsList,
+    updateBackupBadge,
     formatAssetName: (songTitle, partNum = 1, totalParts = 1, item = null) => {
       const settings = window.FHStorage.getSettings();
       const mode = settings.namingMode || 'stealth_scene';
