@@ -343,21 +343,37 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
 
                 c_field = 'groupId' if str(creator_type).lower() in ('group', 'groupid') else 'userId'
 
-                json_meta = json.dumps({
-                    "assetType": "Audio",
-                    "displayName": asset_name[:50],
-                    "description": "In-game background audio and atmospheric music",
-                    "creationContext": {
-                        "creator": {
-                            c_field: creator_id
+                if (not creator_id or creator_id == '0') and c_field == 'userId':
+                    try:
+                        m_jwt = re.search(r'(eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+)', api_key)
+                        if m_jwt:
+                            parts = m_jwt.group(1).split('.')
+                            if len(parts) >= 2:
+                                pad = len(parts[1]) % 4
+                                b64 = parts[1] + ('=' * (4 - pad) if pad else '')
+                                payload = json.loads(base64.urlsafe_b64decode(b64.encode()).decode())
+                                if payload.get('ownerId'):
+                                    creator_id = str(payload['ownerId'])
+                    except Exception:
+                        pass
+
+                temp_meta_path = os.path.join(CACHE_DIR, 'temp_meta.json')
+                with open(temp_meta_path, 'w', encoding='utf-8') as mf:
+                    mf.write(json.dumps({
+                        "assetType": "Audio",
+                        "displayName": asset_name[:50],
+                        "description": "In-game background audio and atmospheric music",
+                        "creationContext": {
+                            "creator": {
+                                c_field: str(creator_id)
+                            }
                         }
-                    }
-                })
+                    }))
 
                 curl_cmd = [
                     'curl.exe', '-s', '-X', 'POST', 'https://apis.roblox.com/assets/v1/assets',
                     '-H', f'x-api-key: {api_key}',
-                    '-F', f'request={json_meta};type=application/json',
+                    '-F', f'request=<{temp_meta_path};type=application/json',
                     '-F', f'fileContent=@{temp_audio_path};type={mime_type}'
                 ]
 
@@ -370,6 +386,7 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                     op_path = match.group(1)
                     check_url = f"https://apis.roblox.com/assets/v1/{op_path}"
                     asset_id = ""
+                    mod_status = "reviewing"
 
                     for _ in range(8):
                         time.sleep(2)
@@ -424,8 +441,19 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
                         "status": mod_status,
                         "operationPath": op_path
                     })
+                    return
                 else:
-                    self.send_json({"success": False, "error": resp_text or "Roblox API upload error"}, 400)
+                    err_msg = resp_text
+                    try:
+                        err_json = json.loads(resp_text)
+                        if 'message' in err_json:
+                            err_msg = err_json['message']
+                        elif 'error' in err_json:
+                            err_msg = err_json['error']
+                    except Exception:
+                        pass
+                    self.send_json({"success": False, "error": err_msg or "Roblox API upload error"}, 400)
+                    return
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')

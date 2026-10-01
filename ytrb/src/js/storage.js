@@ -167,11 +167,7 @@ function getAccounts() {
     }
     const accounts = JSON.parse(raw);
     if (Array.isArray(accounts)) {
-      const cleaned = accounts.filter(a => a && a.name !== 'Momygze' && a.name !== 'erlangaudio' && a.apiKey !== 'Aaze7719462810SHc=');
-      if (cleaned.length !== accounts.length) {
-        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cleaned));
-      }
-      return cleaned;
+      return accounts.filter(a => a && typeof a === 'object' && a.id && a.apiKey);
     }
     return [];
   } catch (e) {

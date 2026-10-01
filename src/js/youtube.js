@@ -207,13 +207,21 @@ function initYoutubeModule() {
 
       // 2. Fetch real audio from local FH Audio streaming bridge across all ports
       if (!audioBuffer) {
-        setFetchProgress(70, `Mengunduh audio "${title.substring(0, 30)}..." via server...`, 'loading');
-        const audioEndpoints = [
-          window.getBackendUrl ? window.getBackendUrl(`/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`) : '',
-          `http://127.0.0.1:5520/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`,
-          `http://localhost:5520/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`,
-          `/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`
-        ].filter(Boolean);
+        setFetchProgress(65, `Memproses audio "${title.substring(0, 30)}..."...`, 'loading');
+        const isHttpsOrigin = window.location.protocol === 'https:';
+        const audioEndpoints = isHttpsOrigin
+          ? [
+              `/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`,
+              window.getBackendUrl ? window.getBackendUrl(`/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`) : '',
+              `http://127.0.0.1:5520/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`,
+              `http://localhost:5520/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`
+            ].filter(Boolean)
+          : [
+              window.getBackendUrl ? window.getBackendUrl(`/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`) : '',
+              `http://127.0.0.1:5520/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`,
+              `http://localhost:5520/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`,
+              `/api/fetch-audio?url=${encodeURIComponent(targetDownloadUrl)}`
+            ].filter(Boolean);
 
         for (const ep of audioEndpoints) {
           try {

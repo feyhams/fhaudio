@@ -1,5 +1,313 @@
 [
   {
+    "id": "hist_1790799899411",
+    "title": "  | TEAM TOMODACHI (INDONESIA REMIX) .mp3",
+    "sceneAlias": "Ocean_View",
+    "sourceUrl": "https://www.youtube.com/watch?v=LeCcX0JFITw",
+    "thumbnail": "https://img.youtube.com/vi/LeCcX0JFITw/hqdefault.jpg",
+    "timestamp": "01/10/2026, 03.24.59",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "2:53.7",
+        "durationSec": 173.71555555555557,
+        "assetId": "106630369298235",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Ocean_View_Part1",
+        "assetName": "BGM_Ocean_View_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/baf6938f-28dc-4cf1-86be-c8b9dd9d9f41"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790798390544",
+    "title": "Meiska - Hilang Tanpa Bilang (Official Lyric Video).mp3",
+    "sceneAlias": "Morning_Mist",
+    "sourceUrl": "https://www.youtube.com/watch?v=xURzcQ2JgHQ",
+    "thumbnail": "https://img.youtube.com/vi/xURzcQ2JgHQ/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.59.50",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:59.4",
+        "durationSec": 119.38421768707482,
+        "assetId": "82899702612840",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Morning_Mist_Part1",
+        "assetName": "BGM_Morning_Mist_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/2883314e-884e-4cc2-b90a-7a1512dd0def"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790798312446",
+    "title": "Aku Baik Saja - Rossa | Lirik Lagu.mp3",
+    "sceneAlias": "Moonlit_Beach",
+    "sourceUrl": "https://www.youtube.com/watch?v=ECCEqO8x-mE",
+    "thumbnail": "https://img.youtube.com/vi/ECCEqO8x-mE/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.58.32",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:48.7",
+        "durationSec": 108.65176870748299,
+        "assetId": "80721901610728",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Moonlit_Beach_Part1",
+        "assetName": "BGM_Moonlit_Beach_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/f5e89fe3-7634-41d0-9827-8f4ced391cc0"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790798244374",
+    "title": "Kaleb J - Now I Know (Official Music Video).mp3",
+    "sceneAlias": "Windy_Hill",
+    "sourceUrl": "https://www.youtube.com/watch?v=SvUHjquPqSQ",
+    "thumbnail": "https://img.youtube.com/vi/SvUHjquPqSQ/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.57.24",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:52.9",
+        "durationSec": 112.90639455782313,
+        "assetId": "139240901004849",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Windy_Hill_Part1",
+        "assetName": "BGM_Windy_Hill_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/afa707d0-02d2-4b53-8547-ea56e3e70180"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790798171503",
+    "title": "Mahen - Pura Pura Lupa (Official Music Video).mp3",
+    "sceneAlias": "Quantum_Core",
+    "sourceUrl": "https://www.youtube.com/watch?v=zPWA5w0Yxco",
+    "thumbnail": "https://img.youtube.com/vi/zPWA5w0Yxco/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.56.11",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:46.2",
+        "durationSec": 106.2252380952381,
+        "assetId": "96983229237539",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Quantum_Core_Part1",
+        "assetName": "BGM_Quantum_Core_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/b48e30c3-7fce-48d7-84f3-66b73a85fb28"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790798016360",
+    "title": "ANGGIS DEVAKI - DIRIMU YANG DULU (OFFICIAL MUSIC VIDEO).mp3",
+    "sceneAlias": "Mystic_Shrine",
+    "sourceUrl": "https://www.youtube.com/watch?v=P-08oXYy8Bc",
+    "thumbnail": "https://img.youtube.com/vi/P-08oXYy8Bc/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.53.36",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:38.4",
+        "durationSec": 98.39693877551021,
+        "assetId": "91950055848830",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Mystic_Shrine_Part1",
+        "assetName": "BGM_Mystic_Shrine_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/49cc1a46-51d9-45c6-bfa1-ae7cca188f88"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790797894755",
+    "title": "Ernie Zakri, Ade Govinda - Masing Masing (Official Music Video).mp3",
+    "sceneAlias": "Final_Showdown",
+    "sourceUrl": "https://www.youtube.com/watch?v=FtHaMWRn8Mc",
+    "thumbnail": "https://img.youtube.com/vi/FtHaMWRn8Mc/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.51.34",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:45.5",
+        "durationSec": 105.46403628117913,
+        "assetId": "111847927711715",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Final_Showdown_Part1",
+        "assetName": "BGM_Final_Showdown_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/2fe3be8b-be5a-4932-9246-e28c4fc3a9ad"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790797818456",
+    "title": "MAHALINI - SISA RASA (OFFICIAL MUSIC VIDEO).mp3",
+    "sceneAlias": "Abandoned_Lab",
+    "sourceUrl": "https://www.youtube.com/watch?v=Wh66ThpxvI4",
+    "thumbnail": "https://img.youtube.com/vi/Wh66ThpxvI4/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.50.18",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "2:21.2",
+        "durationSec": 141.19537414965987,
+        "assetId": "121342175425500",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Abandoned_Lab_Part1",
+        "assetName": "BGM_Abandoned_Lab_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/69c1f573-60ed-4c2a-af34-a03a7e616078"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790797740782",
+    "title": "Ifan Seventeen - Jangan Paksa Rindu | Official Lyric Video.mp3",
+    "sceneAlias": "Autumn_Park",
+    "sourceUrl": "https://www.youtube.com/watch?v=38_bAaFI41w",
+    "thumbnail": "https://img.youtube.com/vi/38_bAaFI41w/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.49.00",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:46.6",
+        "durationSec": 106.60482993197279,
+        "assetId": "134971129237005",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Autumn_Park_Part1",
+        "assetName": "BGM_Autumn_Park_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/38e3fcf6-45f8-4803-af4c-600f02cd3e66"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790797587659",
+    "title": "FABIO ASHER - RUMAH SINGGAH (OFFICIAL MUSIC VIDEO).mp3",
+    "sceneAlias": "Cyber_City",
+    "sourceUrl": "https://www.youtube.com/watch?v=5k6IkftDRwE",
+    "thumbnail": "https://img.youtube.com/vi/5k6IkftDRwE/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.46.27",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:50.8",
+        "durationSec": 110.81049886621315,
+        "assetId": "91406948687100",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Cyber_City_Part1",
+        "assetName": "BGM_Cyber_City_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/f30ed612-21c1-4756-95ad-d48013814e4e"
+      }
+    ]
+  },
+  {
+    "id": "hist_1790797333825",
+    "title": "Justin Bieber - Heartbreaker (Audio).mp3",
+    "sceneAlias": "Neon_District",
+    "sourceUrl": "https://www.youtube.com/watch?v=nP-DQK8YIzM",
+    "thumbnail": "https://img.youtube.com/vi/nP-DQK8YIzM/hqdefault.jpg",
+    "timestamp": "01/10/2026, 02.42.13",
+    "speed": 2.3,
+    "robloxSpeed": 0.435,
+    "volumeDb": -4,
+    "robloxVolume": 1.58,
+    "quality": 10,
+    "maxPartDuration": 250,
+    "parts": [
+      {
+        "partNum": 1,
+        "duration": "1:54.3",
+        "durationSec": 114.262358276644,
+        "assetId": "71376207151493",
+        "viaAccount": "erlangaudio",
+        "moderationStatus": "approved",
+        "robloxAlias": "BGM_Neon_District_Part1",
+        "assetName": "BGM_Neon_District_Part1",
+        "uploadStatus": "uploaded",
+        "operationPath": "operations/34f48a4f-13a7-4b96-a73e-3d75d8384122"
+      }
+    ]
+  },
+  {
     "id": "hist_1790786214961",
     "title": "I Prevail & Amira Elfeky - PARADISE2",
     "sceneAlias": "Cyber_City",

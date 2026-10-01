@@ -324,21 +324,23 @@ class FHAudioHandler(http.server.SimpleHTTPRequestHandler):
 
                 c_field = 'groupId' if str(creator_type).lower() in ('group', 'groupid') else 'userId'
 
-                json_meta = json.dumps({
-                    "assetType": "Audio",
-                    "displayName": asset_name[:50],
-                    "description": "In-game background audio and atmospheric music",
-                    "creationContext": {
-                        "creator": {
-                            c_field: creator_id
+                temp_meta_path = os.path.join(CACHE_DIR, 'temp_meta.json')
+                with open(temp_meta_path, 'w', encoding='utf-8') as mf:
+                    mf.write(json.dumps({
+                        "assetType": "Audio",
+                        "displayName": asset_name[:50],
+                        "description": "In-game background audio and atmospheric music",
+                        "creationContext": {
+                            "creator": {
+                                c_field: str(creator_id)
+                            }
                         }
-                    }
-                })
+                    }))
 
                 curl_cmd = [
                     'curl.exe', '-s', '-X', 'POST', 'https://apis.roblox.com/assets/v1/assets',
                     '-H', f'x-api-key: {api_key}',
-                    '-F', f'request={json_meta};type=application/json',
+                    '-F', f'request=<{temp_meta_path};type=application/json',
                     '-F', f'fileContent=@{temp_audio_path};type=audio/ogg'
                 ]
 

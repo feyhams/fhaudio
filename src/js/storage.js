@@ -106,8 +106,7 @@ async function syncWithServer() {
       const serverAccounts = await accResp.json();
       const localAccounts = getAccounts();
       if (Array.isArray(serverAccounts) && serverAccounts.length > 0) {
-        const cleanedServer = serverAccounts.filter(a => a && a.name !== 'Momygze' && a.name !== 'erlangaudio' && a.apiKey !== 'Aaze7719462810SHc=');
-        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cleanedServer));
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(serverAccounts));
       } else if (localAccounts.length > 0) {
         pushAccountsToServer(localAccounts);
       }
@@ -173,12 +172,7 @@ function getAccounts() {
     }
     const accounts = JSON.parse(raw);
     if (Array.isArray(accounts)) {
-      // Clean up any old sample / dummy accounts
-      const cleaned = accounts.filter(a => a && a.name !== 'Momygze' && a.name !== 'erlangaudio' && a.apiKey !== 'Aaze7719462810SHc=');
-      if (cleaned.length !== accounts.length) {
-        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(cleaned));
-      }
-      return cleaned;
+      return accounts.filter(a => a && typeof a === 'object' && a.id && a.apiKey);
     }
     return [];
   } catch (e) {
