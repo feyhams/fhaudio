@@ -936,7 +936,30 @@ function initHistoryModule() {
             })
           });
 
-          const result = await resp.json();
+          if (!resp.ok) {
+            const rawText = await resp.text().catch(() => '');
+            if (resp.status === 413 || (rawText && rawText.includes('FUNCTION_PAYLOAD_TOO_LARGE')) || (rawText && rawText.includes('Payload Too Large'))) {
+              const sizeMB = blob ? (blob.size / 1024 / 1024).toFixed(1) : 'Audio';
+              alert(
+                `Upload Cloud Vercel Ditolak (File Terlalu Besar):\n\n` +
+                `Ukuran audio ini (${sizeMB} MB) melebihi batas maksimal serverless Vercel (maks 4.5 MB).\n\n` +
+                `SOLUSI:\n` +
+                `Buka aplikasi via server lokal PC kamu:\n` +
+                `👉 http://192.168.1.3:5520 (atau http://localhost:5520)\n\n` +
+                `Versi lokal PC mendukung upload audio hingga 20 MB tanpa batasan cloud!`
+              );
+              throw new Error(`File terlalu besar untuk Vercel (${sizeMB} MB > batas 4.5 MB). Buka via http://192.168.1.3:5520.`);
+            }
+            throw new Error(rawText || `Server error (${resp.status})`);
+          }
+
+          let result;
+          try {
+            result = await resp.json();
+          } catch (parseEx) {
+            throw new Error('Respon server upload tidak valid');
+          }
+
           if (result.success) {
             const modStatus = result.status || (result.assetId ? 'reviewing' : 'unchecked');
             window.FHStorage.updateHistoryPart(item.id, partNum, {
