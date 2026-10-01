@@ -38,8 +38,67 @@ function initHistoryModule() {
     loadingPartNum: null
   };
 
-  function renderHistoryDashboard() {
+  // Active in-memory upload jobs tracker: key -> { controller, timer, startTime }
+  const activeUploadJobs = new Map();
+
+  function cancelOrResetUpload(itemId, partNum) {
+    const jobKey = `${itemId}_${partNum}`;
+    if (activeUploadJobs.has(jobKey)) {
+      const job = activeUploadJobs.get(jobKey);
+      if (job.controller) {
+        try { job.controller.abort(); } catch (e) {}
+      }
+      if (job.timer) clearTimeout(job.timer);
+      activeUploadJobs.delete(jobKey);
+    }
     const list = window.FHStorage.getHistory();
+    const item = list.find(h => h.id === itemId);
+    const part = (item?.parts || []).find(p => p.partNum === partNum);
+    const fallbackMod = (part && (part.assetId || part.operationPath)) ? part.moderationStatus : 'unchecked';
+    window.FHStorage.updateHistoryPart(itemId, partNum, {
+      uploadStatus: 'idle',
+      moderationStatus: fallbackMod
+    });
+    window.showToast(`Status upload Part ${partNum} di-reset ke siap upload.`);
+    renderHistoryDashboard();
+  }
+
+  function renderHistoryDashboard() {
+    let list = window.FHStorage.getHistory();
+
+    // Auto-heal orphaned 'uploading' states (from previous browser sessions/reloads)
+    // or phantom 'reviewing' states (items without assetId or operationPath)
+    let needsSave = false;
+    list.forEach(item => {
+      (item.parts || []).forEach(part => {
+        const jobKey = `${item.id}_${part.partNum}`;
+        const isJobRunning = activeUploadJobs.has(jobKey);
+
+        if (part.uploadStatus === 'uploading' && !isJobRunning) {
+          part.uploadStatus = 'idle';
+          if (!part.assetId && !part.operationPath) {
+            part.moderationStatus = 'unchecked';
+          }
+          window.FHStorage.updateHistoryPart(item.id, part.partNum, {
+            uploadStatus: 'idle',
+            moderationStatus: part.moderationStatus
+          });
+          needsSave = true;
+        } else if (part.moderationStatus === 'reviewing' && !part.assetId && !part.operationPath && part.uploadStatus !== 'uploading') {
+          part.moderationStatus = 'unchecked';
+          part.uploadStatus = 'idle';
+          window.FHStorage.updateHistoryPart(item.id, part.partNum, {
+            uploadStatus: 'idle',
+            moderationStatus: 'unchecked'
+          });
+          needsSave = true;
+        }
+      });
+    });
+
+    if (needsSave) {
+      list = window.FHStorage.getHistory();
+    }
 
     // 1. Calculate REAL dynamic stats from user's history
     let totalSongs = list.length;
@@ -277,10 +336,15 @@ function initHistoryModule() {
         let rightActionsHtml = '';
         if (isUploading) {
           rightActionsHtml = `
-            <span class="status-pill reviewing" style="background: rgba(234, 179, 8, 0.15); color: #fbbf24;">
-              <svg class="spin-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
-              <span>Mengunggah...</span>
-            </span>
+            <div style="display:inline-flex; align-items:center; gap:0.4rem;">
+              <span class="status-pill reviewing" style="background: rgba(234, 179, 8, 0.15); color: #fbbf24;">
+                <svg class="spin-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+                <span>Mengunggah...</span>
+              </span>
+              <button type="button" class="btn-cancel-upload" data-id="${item.id}" data-part="${part.partNum}" title="Batal atau Reset Status Upload" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; border-radius: 6px; padding: 0.25rem 0.55rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                ✕ Reset
+              </button>
+            </div>
           `;
         } else if (isRejected) {
           rightActionsHtml = `
@@ -405,6 +469,14 @@ function initHistoryModule() {
             checkModBtn.innerHTML = `<svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg> Memeriksa...`;
             await checkPartModerationStatus(item, part);
             renderHistoryDashboard();
+          });
+        }
+
+        // Action 6: Cancel / Reset stuck upload
+        const cancelBtn = partRow.querySelector('.btn-cancel-upload');
+        if (cancelBtn) {
+          cancelBtn.addEventListener('click', () => {
+            cancelOrResetUpload(item.id, part.partNum);
           });
         }
 
@@ -791,6 +863,40 @@ function initHistoryModule() {
         return resolve({ success: false, error: 'No active account' });
       }
 
+      const jobKey = `${item.id}_${partNum}`;
+      // Clean up any existing job for this part
+      if (activeUploadJobs.has(jobKey)) {
+        const prevJob = activeUploadJobs.get(jobKey);
+        if (prevJob.controller) {
+          try { prevJob.controller.abort(); } catch (e) {}
+        }
+        if (prevJob.timer) clearTimeout(prevJob.timer);
+        activeUploadJobs.delete(jobKey);
+      }
+
+      const controller = new AbortController();
+      const timeoutTimer = setTimeout(() => {
+        try { controller.abort(new Error('Upload timeout (50s)')); } catch (e) {}
+        window.showToast(`Upload Roblox Part ${partNum} timeout (50 detik). Status di-reset.`);
+        window.FHStorage.updateHistoryPart(item.id, partNum, {
+          uploadStatus: 'idle',
+          moderationStatus: 'unchecked'
+        });
+        activeUploadJobs.delete(jobKey);
+        renderHistoryDashboard();
+      }, 50000);
+
+      activeUploadJobs.set(jobKey, {
+        controller,
+        timer: timeoutTimer,
+        startTime: Date.now()
+      });
+
+      const cleanupJob = () => {
+        clearTimeout(timeoutTimer);
+        activeUploadJobs.delete(jobKey);
+      };
+
       const currentPart = (item.parts || []).find(p => p.partNum === partNum);
       if (currentPart && (currentPart.moderationStatus === 'rejected' || currentPart.moderationStatus === 'blocked')) {
         const rerolled = window.FHStorage.rerollItemScene(item.id);
@@ -814,6 +920,7 @@ function initHistoryModule() {
       }
 
       if (!blob) {
+        cleanupJob();
         window.showToast('Audio blob tidak ditemukan di cache.');
         window.FHStorage.updateHistoryPart(item.id, partNum, {
           uploadStatus: 'idle',
@@ -824,7 +931,17 @@ function initHistoryModule() {
       }
 
       const reader = new FileReader();
-      reader.readAsDataURL(blob);
+      reader.onerror = () => {
+        cleanupJob();
+        window.showToast('Gagal membaca file audio.');
+        window.FHStorage.updateHistoryPart(item.id, partNum, {
+          uploadStatus: 'idle',
+          moderationStatus: 'unchecked'
+        });
+        renderHistoryDashboard();
+        return resolve({ success: false, error: 'File read error' });
+      };
+
       reader.onloadend = async () => {
         const base64data = reader.result.split(',')[1];
         const targetPart = (item.parts || []).find(p => p.partNum === partNum);
@@ -838,6 +955,7 @@ function initHistoryModule() {
           const resp = await fetch(uploadApiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             body: JSON.stringify({
               apiKey: activeAccount.apiKey,
               assetName: assetName,
@@ -846,6 +964,8 @@ function initHistoryModule() {
               audioBase64: base64data
             })
           });
+
+          cleanupJob();
 
           if (!resp.ok) {
             const rawText = await resp.text().catch(() => '');
@@ -872,7 +992,7 @@ function initHistoryModule() {
           }
 
           if (result.success) {
-            const modStatus = result.status || (result.assetId ? 'approved' : 'reviewing');
+            const modStatus = result.status || (result.assetId ? 'reviewing' : 'unchecked');
             window.FHStorage.updateHistoryPart(item.id, partNum, {
               assetId: result.assetId || '',
               robloxAlias: assetName,
@@ -888,7 +1008,7 @@ function initHistoryModule() {
             } else if (modStatus === 'rejected') {
               window.showToast(`✕ Audio Ditolak (Rejected) oleh moderasi Roblox.`);
             } else {
-              window.showToast('Upload terkirim! Sedang dalam peninjauan moderasi Roblox...');
+              window.showToast(`Upload terkirim (ID: ${result.assetId || '-'})! Sedang dalam peninjauan moderasi Roblox...`);
             }
             renderHistoryDashboard();
             return resolve(result);
@@ -910,12 +1030,17 @@ function initHistoryModule() {
             return resolve(result);
           }
         } catch (err) {
+          cleanupJob();
           console.warn('Direct upload error:', err);
-          const isConnErr = err.name === 'TypeError' || (err.message && (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Failed')));
-          if (isConnErr) {
-            window.showToast('Koneksi upload gagal: Server lokal port 5500 belum berjalan! Jalankan "Buka FH Audio.bat".', 6000);
+          const isTimeout = err.name === 'AbortError' || (err.message && err.message.includes('timeout'));
+          const isConnErr = !isTimeout && (err.name === 'TypeError' || (err.message && (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Failed'))));
+          
+          if (isTimeout) {
+            window.showToast('Upload timeout (50 detik). Status di-reset ke siap upload.');
+          } else if (isConnErr) {
+            window.showToast('Koneksi upload gagal: Server lokal port 5520 belum berjalan! Jalankan "Buka FH Audio.bat".', 6000);
             const wantFallback = confirm(
-              'Koneksi ke server lokal (port 5500) terputus.\n\n' +
+              'Koneksi ke server lokal (port 5520) terputus.\n\n' +
               'Penyebab: File "Buka FH Audio.bat" belum dijalankan, atau server python tertutup.\n\n' +
               'Apakah Anda ingin mengunduh script PowerShell (.ps1) untuk mengunggah audio ini secara langsung tanpa server?'
             );
@@ -933,6 +1058,18 @@ function initHistoryModule() {
           return resolve({ success: false, error: err.message });
         }
       };
+
+      try {
+        reader.readAsDataURL(blob);
+      } catch (readErr) {
+        cleanupJob();
+        window.FHStorage.updateHistoryPart(item.id, partNum, {
+          uploadStatus: 'idle',
+          moderationStatus: 'unchecked'
+        });
+        renderHistoryDashboard();
+        return resolve({ success: false, error: readErr.message });
+      }
     });
   }
   window.executeRobloxUpload = executeRobloxUpload;
