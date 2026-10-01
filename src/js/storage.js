@@ -6,11 +6,13 @@
 function getBackendUrl(endpoint) {
   if (!endpoint.startsWith('/')) endpoint = '/' + endpoint;
   const loc = (typeof window !== 'undefined' && window.location) ? window.location : null;
-  if (loc && loc.port === '5520') {
+  if (!loc) return endpoint;
+  // If running on HTTPS (such as fhaudio.vercel.app) or port 5520, use relative paths so Vercel Serverless Functions or local server handle it natively without Mixed Content block
+  if (loc.protocol === 'https:' || loc.port === '5520') {
     return endpoint;
   }
-  const isLocal = loc && (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1');
-  const host = isLocal ? loc.hostname : '127.0.0.1';
+  const isLocal = (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1');
+  const host = isLocal ? loc.hostname : loc.hostname || '127.0.0.1';
   return `http://${host}:5520${endpoint}`;
 }
 window.getBackendUrl = getBackendUrl;
