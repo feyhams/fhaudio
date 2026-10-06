@@ -263,7 +263,8 @@
 
         const speed = parseFloat(document.getElementById('sliderSpeed')?.value) || 2.3;
         const ampDb = parseFloat(document.getElementById('sliderAmp')?.value) || -4;
-        const quality = parseFloat(document.getElementById('sliderQuality')?.value) || 10;
+        const qRaw = parseFloat(document.getElementById('sliderQuality')?.value);
+        const quality = Number.isFinite(qRaw) ? qRaw : 5;
         const maxDurationSec = parseFloat(document.getElementById('sliderMaxDuration')?.value) || 250;
         const robloxSpeed = (1 / speed).toFixed(3);
         const linearGain = Math.pow(10, ampDb / 20);

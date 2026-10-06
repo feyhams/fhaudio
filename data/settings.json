@@ -6,7 +6,7 @@
   "includePartNumber": true,
   "defaultPresetSpeed": 2.3,
   "defaultAmplification": -4,
-  "defaultQuality": 10,
+  "defaultQuality": 5,
   "defaultMaxDuration": 250,
   "uploadGatewayUrl": "",
   "autoUploadAfterConvert": false

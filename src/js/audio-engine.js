@@ -102,8 +102,9 @@ class AudioEngine {
    * @param {Object} options { speed: 2.3, ampDb: -4, enableTreble: false, enableLimiter: true }
    */
   async renderBypassBuffer(inputBuffer, options = {}) {
-    const speed = parseFloat(options.speed) || 2.3;
-    const ampDb = parseFloat(options.ampDb) || -4;
+    const numOr = (v, d) => (Number.isFinite(v) ? v : d);
+    const speed = numOr(parseFloat(options.speed), 2.3);
+    const ampDb = numOr(parseFloat(options.ampDb), -4);
     // Default Filter Treble: OFF (Mati)
     const enableTreble = !!options.enableTreble;
     // Default Headroom Limiter: ON (Aktif)
@@ -243,12 +244,11 @@ class AudioEngine {
         if (format === 'ogg') {
           // Standardisasi Vorbis quality (0 to 10 scale, default ~160-192 kbps VBR)
           let vorbisQ = 5;
-          if (typeof quality === 'number') {
-            if (quality >= 0 && quality <= 1) {
-              vorbisQ = Math.round(quality * 10);
-            } else {
-              vorbisQ = Math.min(10, Math.max(0, Math.round(quality)));
-            }
+          if (typeof quality === 'number' && Number.isFinite(quality)) {
+            // Slider/UI selalu memakai skala bulat 0-10; hanya pecahan (0,1) dianggap skala 0-1
+            vorbisQ = (quality > 0 && quality < 1)
+              ? Math.round(quality * 10)
+              : Math.min(10, Math.max(0, Math.round(quality)));
           }
 
           // Try local wasm first if served via HTTP, otherwise fallback to default unpkg
@@ -293,6 +293,7 @@ class AudioEngine {
 
           const chunks = [];
           const chunkSize = 44100;
+          let chunkCount = 0;
           for (let i = 0; i < length; i += chunkSize) {
             const end = Math.min(i + chunkSize, length);
             const slice = [];
@@ -302,6 +303,10 @@ class AudioEngine {
             const encOut = encoder.encode(slice);
             if (encOut && encOut.length > 0) {
               chunks.push(new Uint8Array(encOut));
+            }
+            // Beri napas ke UI thread agar tidak membeku (terutama di HP)
+            if (++chunkCount % 20 === 0) {
+              await new Promise(r => setTimeout(r, 0));
             }
           }
 
@@ -314,12 +319,13 @@ class AudioEngine {
           return new Blob(chunks, { type: mimeType });
         }
       } catch (err) {
-        console.warn('Wasm encoder error, falling back to WAV:', err);
+        console.warn('Wasm encoder error:', err);
+        throw new Error(`Encoder ${format.toUpperCase()} gagal (${err && err.message ? err.message : err}). Muat ulang halaman lalu coba lagi.`);
       }
     }
 
-    // Default to clean lossless WAV blob if WASM encoder is busy or unavailable
-    return this.encodeWav(audioBuffer);
+    // Jangan diam-diam menghasilkan WAV raksasa (~10 MB/menit) yang akan ditolak Roblox
+    throw new Error(`Encoder ${format.toUpperCase()} tidak tersedia (WASM belum termuat).`);
   }
 
   // Pure JavaScript PCM WAV encoder
@@ -499,8 +505,9 @@ class AudioEngine {
     const ramp = 0.03; // Smooth 30ms transition to avoid audio clicks
 
     const mode = options.mode || 'original'; // 'original' | 'bypass' | 'roblox'
-    const speed = parseFloat(options.speed) || 2.3;
-    const ampDb = parseFloat(options.ampDb) || -4;
+    const numOr = (v, d) => (Number.isFinite(v) ? v : d);
+    const speed = numOr(parseFloat(options.speed), 2.3);
+    const ampDb = numOr(parseFloat(options.ampDb), -4);
     const enableTreble = !!options.enableTreble;
     const enableLimiter = options.enableLimiter !== false;
     const enableMetalMode = !!options.enableMetalMode;

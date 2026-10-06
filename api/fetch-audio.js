@@ -63,16 +63,26 @@ module.exports = async (req, res) => {
     }
 
     const contentType = audioRes.headers.get('content-type') || 'audio/mpeg';
-    const contentLength = audioRes.headers.get('content-length');
-
     res.setHeader('Content-Type', contentType);
-    if (contentLength) {
-      res.setHeader('Content-Length', contentLength);
-    }
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200);
 
+    // Streaming: hindari buffer penuh + res.send (batas respons 4.5 MB di Vercel)
+    const { Readable } = require('stream');
+    if (audioRes.body && typeof Readable.fromWeb === 'function') {
+      await new Promise((resolve, reject) => {
+        const nodeStream = Readable.fromWeb(audioRes.body);
+        nodeStream.on('error', reject);
+        res.on('close', resolve);
+        res.on('finish', resolve);
+        nodeStream.pipe(res);
+      });
+      return;
+    }
     const arrayBuffer = await audioRes.arrayBuffer();
-    return res.status(200).send(Buffer.from(arrayBuffer));
+    return res.send(Buffer.from(arrayBuffer));
   } catch (err) {
+    if (res.headersSent) return res.end();
     return res.status(500).send(`Error: ${err.message}`);
   }
 };

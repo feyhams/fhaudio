@@ -94,11 +94,6 @@ class WaveformTrimmer {
       this.draw();
       this.renderRuler('waveformRuler');
     }, 80);
-    setTimeout(() => {
-      this.resizeCanvas();
-      this.draw();
-      this.renderRuler('waveformRuler');
-    }, 250);
   }
 
   renderRuler(rulerId = 'waveformRuler') {

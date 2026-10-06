@@ -474,7 +474,12 @@ exit /b
         let audioRes = await fetch(fetchUrl).catch(() => null);
 
         if (!audioRes || !audioRes.ok) {
-          throw new Error('Gagal mengunduh audio track dari server.');
+          let detail = '';
+          if (audioRes) {
+            const body = await audioRes.text().catch(() => '');
+            detail = ` (HTTP ${audioRes.status}${body ? ': ' + body.slice(0, 120) : ''})`;
+          }
+          throw new Error('Gagal mengunduh audio track dari server' + detail);
         }
 
         const arrayBuffer = await audioRes.arrayBuffer();
@@ -502,7 +507,7 @@ exit /b
         const encodedParts = [];
         const partBlobs = [];
         for (let p of rawParts) {
-          const blob = await window.FHAudioEngine.encodeToFormat(p.buffer, 'ogg', 10);
+          const blob = await window.FHAudioEngine.encodeToFormat(p.buffer, 'ogg', 5);
           partBlobs.push(blob);
           const durSec = p.duration;
           const mins = Math.floor(durSec / 60);
@@ -533,7 +538,7 @@ exit /b
           robloxSpeed: 0.435,
           volumeDb: -4,
           robloxVolume: 1.58,
-          quality: 10,
+          quality: 5,
           maxPartDuration: 250,
           parts: encodedParts
         });

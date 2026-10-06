@@ -32,7 +32,7 @@ const defaultSettings = {
   includePartNumber: true,
   defaultPresetSpeed: 2.3,
   defaultAmplification: -4,
-  defaultQuality: 10,
+  defaultQuality: 5,
   defaultMaxDuration: 250,
   uploadGatewayUrl: '', // Optional Cloudflare Worker URL if user wants 1-click in-browser
   autoUploadAfterConvert: false
@@ -41,18 +41,35 @@ const defaultSettings = {
 // ----------------------------------------------------
 // SERVER DISK SYNC HELPERS (Chrome <-> Firefox shared)
 // ----------------------------------------------------
+// Disk server (server.py) hanya ada saat dijalankan lokal (http). Di Vercel (https) tidak ada.
+function hasDiskServer() {
+  const loc = (typeof window !== 'undefined' && window.location) ? window.location : null;
+  return !(loc && loc.protocol === 'https:');
+}
+
+let historyPushTimer = null;
+let historyPushPending = null;
 function pushHistoryToServer(list) {
-  try {
-    const url = getBackendUrl('/api/history');
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(list)
-    }).catch(() => {});
-  } catch (e) {}
+  if (!hasDiskServer()) return;
+  historyPushPending = list;
+  if (historyPushTimer) return;
+  // Gabungkan banyak perubahan beruntun jadi satu kiriman
+  historyPushTimer = setTimeout(() => {
+    const payload = historyPushPending;
+    historyPushTimer = null;
+    historyPushPending = null;
+    try {
+      fetch(getBackendUrl('/api/history'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch (e) {}
+  }, 800);
 }
 
 function pushAccountsToServer(accounts) {
+  if (!hasDiskServer()) return;
   try {
     const url = getBackendUrl('/api/accounts');
     fetch(url, {
@@ -64,6 +81,7 @@ function pushAccountsToServer(accounts) {
 }
 
 function pushSettingsToServer(settings) {
+  if (!hasDiskServer()) return;
   try {
     const url = getBackendUrl('/api/settings');
     fetch(url, {
@@ -76,7 +94,7 @@ function pushSettingsToServer(settings) {
 
 let isSyncing = false;
 async function syncWithServer() {
-  if (isSyncing) return;
+  if (isSyncing || !hasDiskServer()) return;
   isSyncing = true;
   try {
     // 1. Sync History from server disk
@@ -332,7 +350,7 @@ async function savePartBlob(historyId, partNum, blob) {
   }
 
   // Sync audio to local server disk for cross-browser playback
-  if (blob) {
+  if (blob && hasDiskServer()) {
     try {
       const reader = new FileReader();
       reader.readAsDataURL(blob);
@@ -389,6 +407,7 @@ function saveHistory(historyList) {
     return true;
   } catch (e) {
     console.error('Error saving history:', e);
+    if (window.showToast) window.showToast('Penyimpanan browser penuh. Hapus riwayat lama atau ekspor backup.');
     return false;
   }
 }
@@ -432,7 +451,7 @@ function addHistoryItem(item) {
     robloxSpeed: item.robloxSpeed || 0.435,
     volumeDb: item.volumeDb || -4,
     robloxVolume: item.robloxVolume || 1.58,
-    quality: item.quality || 10,
+    quality: item.quality || 5,
     maxPartDuration: item.maxPartDuration || 250,
     parts: processedParts
   };
@@ -510,7 +529,7 @@ async function saveOriginalBlob(historyId, blob) {
   }
 
   // Push to server disk for cross-browser playback
-  if (blob) {
+  if (blob && hasDiskServer()) {
     try {
       const reader = new FileReader();
       reader.readAsDataURL(blob);

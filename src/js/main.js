@@ -760,9 +760,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (convertProgressFill) convertProgressFill.style.width = '35%';
         if (convertProgressStatus) convertProgressStatus.textContent = 'Mempercepat (Bypass) & menerapkan Limiter / Filter...';
 
-        const speed = parseFloat(sliderSpeed.value) || 2.3;
-        const ampDb = parseFloat(sliderAmp.value) || -4;
-        const quality = parseInt(sliderQuality.value, 10) || 6;
+        const numOr = (v, d) => (Number.isFinite(v) ? v : d);
+        const speed = numOr(parseFloat(sliderSpeed.value), 2.3);
+        const ampDb = numOr(parseFloat(sliderAmp.value), -4);
+        const quality = numOr(parseInt(sliderQuality.value, 10), 5);
         const isAutoSplit = toggleAutoSplit ? toggleAutoSplit.checked : true;
         const maxDurationSec = isAutoSplit ? (parseInt(sliderMaxDuration.value, 10) || 360) : 999999;
         const enableTreble = toggleTreble ? toggleTreble.checked : false;
