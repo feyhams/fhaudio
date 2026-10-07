@@ -464,12 +464,42 @@ function initHistoryModule() {
           </span>
         </div>
         <div class="part-actions-group">
+          <button type="button" class="btn-part-download" data-id="${item.id}" data-part="${part.partNum}" title="Unduh berkas OGG part ini ke PC">⬇ OGG</button>
           <button type="button" class="btn-part-preview" data-id="${item.id}" data-part="${part.partNum}" title="Putar audio part (kecepatan bypass ${item.speed || 2.3}x)">Preview Part</button>
           <button type="button" class="btn-part-preview-real" data-id="${item.id}" data-part="${part.partNum}" title="Putar part ini pada kecepatan normal Roblox (1.0x)">Real 1x</button>
           <button type="button" class="btn-part-explorer">Show in Explorer</button>
           ${rightActionsHtml}
         </div>
       `;
+
+      // Action 0: Direct Download Part OGG
+      const downloadPartBtn = partRow.querySelector('.btn-part-download');
+      if (downloadPartBtn) {
+        downloadPartBtn.addEventListener('click', async () => {
+          let blob = await window.FHStorage.getPartBlob(item.id, part.partNum);
+          if (!blob && window.lastRenderedResult && window.lastRenderedResult.blobs) {
+            blob = window.lastRenderedResult.blobs[part.partNum - 1];
+          }
+          if (!blob) {
+            window.showToast('Berkas audio part tidak ditemukan di cache.');
+            return;
+          }
+          const cleanName = (item.title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+          const speedVal = item.speed || 2.3;
+          const robloxSpeed = item.robloxSpeed || (1 / speedVal).toFixed(3);
+          const fileName = `part_${part.partNum}_[Speed_${speedVal}x_Roblox_${robloxSpeed}]_${cleanName}.ogg`;
+
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          const sizeMB = (blob.size / 1024 / 1024).toFixed(2);
+          window.showToast(`✓ Part ${part.partNum} (${sizeMB} MB) berhasil diunduh!`);
+        });
+      }
 
       // Action 1: Copy asset id
       const copyAssetBtn = partRow.querySelector('.btn-copy-asset');
@@ -1020,7 +1050,9 @@ function initHistoryModule() {
   // REAL SHOW IN WINDOWS EXPLORER (No Browser Download Popup)
   // ----------------------------------------------------
   async function showPartInExplorer(item, part) {
-    const cleanFileName = `part_${part.partNum}_${(item.title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 25)}.ogg`;
+    const speedVal = item.speed || 2.3;
+    const robloxSpeed = item.robloxSpeed || (1 / speedVal).toFixed(3);
+    const cleanFileName = `part_${part.partNum}_[Speed_${speedVal}x_Roblox_${robloxSpeed}]_${(item.title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 25)}.ogg`;
 
     // 1. Get blob from IndexedDB or memory
     let blob = await window.FHStorage.getPartBlob(item.id, part.partNum);

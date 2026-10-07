@@ -240,7 +240,9 @@ function initYoutubeModule() {
               if (audioBuffer) {
                 // Store raw bytes directly — no WASM re-encode, no corruption possible
                 if (window.FHAudioEngine) {
-                  window.FHAudioEngine.pendingOriginalBlob = new Blob([rawClone], { type: 'audio/octet-stream' });
+                  const masterBlob = new Blob([rawClone], { type: 'audio/mpeg' });
+                  window.FHAudioEngine.pendingOriginalBlob = masterBlob;
+                  window.FHAudioEngine.sourceAudioBlob = masterBlob;
                 }
                 break;
               }

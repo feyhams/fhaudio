@@ -23,6 +23,11 @@ Panduan ini berisi aturan baku dan preferensi dari pembuat proyek untuk setiap a
   - Tampilkan tombol aksi yang jelas: `Salin Perintah PowerShell` dan `Unduh Script (.bat)`.
   - **Dilarang** menampilkan blok kode perintah yang panjang dan memenuhi layar secara default; cukup sediakan tombol salin dengan indikator yang jelas.
   - Sediakan progress tracker visual dinamis saat proses download dimulai.
+- **Fitur & Format Unduhan Audio (Download Rules)**:
+  - Download disediakan dengan salah satu tujuan utama agar pengguna mengetahui seberapa besar ukuran filenya (MB) guna memantau batas aman (misal batas 20 MB Roblox).
+  - Terdapat **2 jenis unduhan**:
+    1. **MP3 Asli**: File audio mentah/asli segera setelah proses fetch berhasil (dari YouTube/sumber), sebelum dipotong atau di-convert, dengan indikator info ukuran file.
+    2. **OGG Hasil Convert**: Berkas audio (.ogg) hasil render bypass. **Format penamaan file (title) WAJIB menyertakan nilai set speed-nya** (contoh: `part_1_[Speed_2.3x_Roblox_0.435]_Judul.ogg`), sehingga pengguna langsung mengetahui nilai PlaybackSpeed yang harus diatur di Roblox Studio.
 - **Riwayat Terakhir (History)**:
   - Harus berupa komponen **dropdown / collapsible** (`<details>` / `<summary>`), dengan status default **tertutup (hide/collapsed)** agar tidak mengganggu fokus pengguna.
 - **Dilarang Menampilkan Banner Usang**:
@@ -40,3 +45,14 @@ Panduan ini berisi aturan baku dan preferensi dari pembuat proyek untuk setiap a
 - `src/js/youtube.js`: Logika YouTube Converter, generator skrip Windows PowerShell / .bat, progress tracker, dan riwayat download.
 - `src/js/roblox.js`: Pemrosesan audio Roblox Studio (Trimming, pitch/speed modulation, auto-split 6 menit, Web Audio player, WASM exporter).
 - `src/js/toast.js`: Utilitas notifikasi toast interaktif.
+
+---
+
+## 4. Manajemen Versi, Checkpoint & Stabilitas
+- **Aturan Pencegahan Kerusakan (Anti-Regression)**:
+  - Sebelum merombak atau memodifikasi fitur yang sudah berjalan, pastikan fondasi fitur sebelumnya (audio fetch, waveform trimmer, Roblox uploader, akun API) tidak dirusak.
+  - Setiap rilis stabil dikunci dengan Git tag (contoh: `v3.1.0-stable`, `stable`).
+- **Peralatan Pemulihan Cepat (1-Click Recovery)**:
+  - `1. Simpan Titik Stabil.bat`: Merekam snapshot kondisi proyek saat ini ke Git tag `stable` dan folder cadangan `_backups/`.
+  - `2. Kembalikan ke Versi Stabil.bat`: Mengembalikan (*rollback*) seluruh file proyek ke tag `stable` secara instan jika terjadi error/kerusakan setelah pengeditan kode.
+

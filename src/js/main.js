@@ -428,6 +428,19 @@ document.addEventListener('DOMContentLoaded', () => {
       sourceThumb.src = thumbnail || window.FHAudioEngine.sourceThumbnail || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop&q=60';
     }
 
+    // Update Source Audio size badge if blob available
+    const sourceBlob = window.FHAudioEngine.pendingOriginalBlob || window.FHAudioEngine.sourceAudioBlob;
+    const sourceSizeBadge = document.getElementById('sourceAudioSizeBadge');
+    if (sourceSizeBadge) {
+      if (sourceBlob && sourceBlob.size) {
+        const mb = sourceBlob.size / (1024 * 1024);
+        sourceSizeBadge.textContent = mb < 0.1 ? `${(mb * 1024).toFixed(0)} KB` : `${mb.toFixed(1)} MB`;
+        sourceSizeBadge.style.display = 'inline-block';
+      } else {
+        sourceSizeBadge.style.display = 'none';
+      }
+    }
+
     // 3. Show Waveform Card & Load Trimmer
     if (waveformCard) {
       waveformCard.style.display = 'flex';
@@ -608,6 +621,10 @@ document.addEventListener('DOMContentLoaded', () => {
   async function handleAudioFile(file) {
     try {
       window.showToast(`Memuat berkas: ${file.name}...`);
+      if (window.FHAudioEngine) {
+        window.FHAudioEngine.pendingOriginalBlob = file;
+        window.FHAudioEngine.sourceAudioBlob = file;
+      }
       const buf = await window.FHAudioEngine.loadAudioFile(file);
       displayTrackInStudio(buf, file.name);
       window.showToast('Audio siap dipotong & dikonversi!');
@@ -842,11 +859,12 @@ document.addEventListener('DOMContentLoaded', () => {
           const pendingBlob = window.FHAudioEngine.pendingOriginalBlob;
           if (pendingBlob && pendingBlob.size > 1000) {
             await window.FHStorage.saveOriginalBlob(historyItem.id, pendingBlob);
-            window.FHAudioEngine.pendingOriginalBlob = null;
+            window.FHAudioEngine.sourceAudioBlob = pendingBlob;
           } else {
             // Local file: encode trimmed region to WAV (pure JS, never corrupt)
             const origBlob = window.FHAudioEngine.encodeWav(trimmedBuffer);
             await window.FHStorage.saveOriginalBlob(historyItem.id, origBlob);
+            window.FHAudioEngine.sourceAudioBlob = origBlob;
           }
         } catch (e) {
           console.warn('Could not save original blob:', e);
@@ -877,6 +895,15 @@ document.addEventListener('DOMContentLoaded', () => {
           if (resultMetaRobloxSpeed) resultMetaRobloxSpeed.textContent = robloxPlaybackSpeed;
           if (resultMetaVol) resultMetaVol.textContent = `${ampDb} dB`;
           if (resultMetaParts) resultMetaParts.textContent = `${encodedParts.length} Part`;
+
+          // Tampilkan ukuran file OGG di tombol unduh
+          const totalBytes = partBlobs.reduce((acc, b) => acc + (b ? b.size : 0), 0);
+          const totalSizeMB = totalBytes / (1024 * 1024);
+          const sizeStr = totalSizeMB < 0.1 ? `${(totalSizeMB * 1024).toFixed(0)} KB` : `${totalSizeMB.toFixed(2)} MB`;
+          const btnDownloadText = document.getElementById('btnDownloadResultAudioText');
+          if (btnDownloadText) {
+            btnDownloadText.textContent = `Unduh Berkas Audio (.ogg) • ${sizeStr}`;
+          }
         }
 
         window.showToast('Audio berhasil diproses & disimpan ke History!');
@@ -908,16 +935,53 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnDownloadResultAudio) {
     btnDownloadResultAudio.addEventListener('click', () => {
       if (!lastRenderedResult || !lastRenderedResult.blobs.length) return;
+      const speedVal = document.getElementById('sliderSpeed')?.value || '2.3';
+      const robloxSpeed = (1 / parseFloat(speedVal)).toFixed(3);
       lastRenderedResult.blobs.forEach((blob, idx) => {
         const cleanName = (lastRenderedResult.historyItem.title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `part_${idx + 1}_${cleanName}.ogg`;
+        // Format penamaan file OGG menyertakan nilai set speed-nya:
+        a.download = `part_${idx + 1}_[Speed_${speedVal}x_Roblox_${robloxSpeed}]_${cleanName}.ogg`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       });
       window.showToast('Berkas audio berhasil diunduh!');
+    });
+  }
+
+  // Tombol Unduh MP3 Asli di Source Bar
+  const btnDownloadSourceAudio = document.getElementById('btnDownloadSourceAudio');
+  if (btnDownloadSourceAudio) {
+    btnDownloadSourceAudio.addEventListener('click', async () => {
+      const origBlob = window.FHAudioEngine.pendingOriginalBlob || window.FHAudioEngine.sourceAudioBlob;
+      const title = window.FHAudioEngine.sourceFileName || (sourceTitle ? sourceTitle.textContent : 'audio');
+      const cleanName = title.replace(/\.(mp3|wav|ogg|m4a)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 35);
+
+      if (origBlob && origBlob.size > 1000) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(origBlob);
+        a.download = `${cleanName}_asli.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        const mb = (origBlob.size / (1024 * 1024)).toFixed(2);
+        window.showToast(`✓ Master MP3 Asli (${mb} MB) berhasil diunduh!`);
+      } else if (loadedBuffer && window.FHAudioEngine) {
+        window.showToast('Mengemas audio master...');
+        const wavBlob = window.FHAudioEngine.encodeWav(loadedBuffer);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(wavBlob);
+        a.download = `${cleanName}_asli.wav`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        const mb = (wavBlob.size / (1024 * 1024)).toFixed(2);
+        window.showToast(`✓ Master Audio Asli (${mb} MB) berhasil diunduh!`);
+      } else {
+        window.showToast('Belum ada audio master yang dimuat.');
+      }
     });
   }
 

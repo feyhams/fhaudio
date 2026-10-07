@@ -5,3 +5,4 @@ data/audio/
 __pycache__/
 *.pyc
 .DS_Store
+_backups/
