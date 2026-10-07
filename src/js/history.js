@@ -898,32 +898,26 @@ function initHistoryModule() {
     syncPlayerButtonsUI();
 
     try {
-      // PRIORITY 1: sourceBuffer (original fetched audio) in memory at 1x speed
-      const engine = window.FHAudioEngine;
-      if (engine && engine.sourceBuffer) {
-        playDecodedBuffer(engine.sourceBuffer, 1.0, item.id, `Part ${part.partNum} - ${item.title}`, 'part_real', part.partNum);
-        return;
-      }
+      const robloxSpeed = parseFloat(item.robloxSpeed) || (1 / (item.speed || 2.3));
 
-      // PRIORITY 2: In-memory rendered part at Roblox restoration speed
+      // PRIORITY 1: In-memory rendered part at Roblox restoration speed (terpotong & akurat)
       const lr = window.lastRenderedResult;
       if (lr && lr.historyItem && lr.historyItem.id === item.id && lr.parts) {
         const memPart = lr.parts[part.partNum - 1];
-        const robloxSpeed = parseFloat(item.robloxSpeed) || (1 / (item.speed || 2.3));
         if (memPart && memPart.buffer) {
           playDecodedBuffer(memPart.buffer, robloxSpeed, item.id, `Part ${part.partNum} - ${item.title}`, 'part_real', part.partNum);
           return;
         }
       }
 
-      // PRIORITY 3: original blob from IndexedDB at 1x
-      let blob = await window.FHStorage.getOriginalBlob(item.id);
-      let playbackSpeed = 1.0;
+      // PRIORITY 2: part blob at Roblox restoration speed
+      let blob = await window.FHStorage.getPartBlob(item.id, part.partNum);
+      let playbackSpeed = robloxSpeed;
 
-      // PRIORITY 4: part blob at Roblox restoration speed
+      // PRIORITY 3: original trimmed blob from IndexedDB at 1x
       if (!blob) {
-        blob = await window.FHStorage.getPartBlob(item.id, part.partNum);
-        if (blob) playbackSpeed = parseFloat(item.robloxSpeed) || (1 / (item.speed || 2.3));
+        blob = await window.FHStorage.getOriginalBlob(item.id);
+        playbackSpeed = 1.0;
       }
 
       // PRIORITY 5: Live re-fetch

@@ -163,6 +163,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const partCount = isAutoSplit ? Math.max(1, Math.ceil(afterSpeedUp / maxDur)) : 1;
 
     calcStatusText.innerHTML = `Selected: <b>${trimmer.formatTime(cutDur)}</b> → about <b>${trimmer.formatTime(afterSpeedUp)}</b> after speed-up, <b>${partCount} part${partCount > 1 ? 's' : ''}</b>`;
+
+    // Dynamic update for Source Bar download button & badge based on trimming
+    const sourceBlob = window.FHAudioEngine.pendingOriginalBlob || window.FHAudioEngine.sourceAudioBlob;
+    const sourceSizeBadge = document.getElementById('sourceAudioSizeBadge');
+    const btnDownloadSourceAudio = document.getElementById('btnDownloadSourceAudio');
+    const isTrimmed = cutDur < (loadedBuffer.duration - 0.2) || trimmer.startTime > 0.1;
+    if (sourceSizeBadge && sourceBlob && sourceBlob.size) {
+      const origMb = sourceBlob.size / (1024 * 1024);
+      if (isTrimmed) {
+        const trimmedMb = (origMb * (cutDur / loadedBuffer.duration)).toFixed(1);
+        sourceSizeBadge.textContent = `${trimmedMb} MB (Cut)`;
+        if (btnDownloadSourceAudio) {
+          const textSpan = btnDownloadSourceAudio.querySelector('span:not(.source-audio-size-badge)');
+          if (textSpan) textSpan.textContent = 'Unduh Master Terpotong';
+        }
+      } else {
+        sourceSizeBadge.textContent = origMb < 0.1 ? `${(origMb * 1024).toFixed(0)} KB` : `${origMb.toFixed(1)} MB`;
+        if (btnDownloadSourceAudio) {
+          const textSpan = btnDownloadSourceAudio.querySelector('span:not(.source-audio-size-badge)');
+          if (textSpan) textSpan.textContent = 'Unduh MP3 Asli';
+        }
+      }
+    }
   }
 
   // Helper to sync live Web Audio parameters without restarting playback
@@ -535,6 +558,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       displayTrackInStudio(audioBuffer, historyItem.title || 'Audio Track', historyItem.thumbnail);
 
+      // Restore cut points if they were saved in history!
+      if (typeof historyItem.cutStart === 'number' && typeof historyItem.cutEnd === 'number' && trimmer) {
+        if (historyItem.cutEnd <= audioBuffer.duration + 0.5) {
+          trimmer.setStartTime(historyItem.cutStart);
+          trimmer.setEndTime(historyItem.cutEnd);
+          if (inputStartTime) inputStartTime.value = trimmer.formatTime(historyItem.cutStart);
+          if (inputEndTime) inputEndTime.value = trimmer.formatTime(historyItem.cutEnd);
+          updateCalculationSummary();
+        }
+      }
+
       // Force multiple rAF/timeouts to guarantee canvas render after CSS transitions
       requestAnimationFrame(() => {
         if (trimmer) {
@@ -767,12 +801,37 @@ document.addEventListener('DOMContentLoaded', () => {
       if (convertProgressStatus) convertProgressStatus.textContent = 'Memotong audio sesuai seleksi...';
 
       try {
-        // Step 1: Slice trimmed region
+        // Ambil cut range dari trimmer DAN timecode inputs untuk presisi mutlak
+        let cutStart = (trimmer && typeof trimmer.startTime === 'number') ? trimmer.startTime : 0;
+        let cutEnd = (trimmer && typeof trimmer.endTime === 'number' && trimmer.endTime > 0) ? trimmer.endTime : loadedBuffer.duration;
+
+        if (inputStartTime && inputStartTime.value) {
+          const parsedStart = parseTimecode(inputStartTime.value);
+          if (Number.isFinite(parsedStart) && parsedStart >= 0) {
+            cutStart = parsedStart;
+            if (trimmer) trimmer.startTime = cutStart;
+          }
+        }
+        if (inputEndTime && inputEndTime.value) {
+          const parsedEnd = parseTimecode(inputEndTime.value);
+          if (Number.isFinite(parsedEnd) && parsedEnd > cutStart) {
+            cutEnd = parsedEnd;
+            if (trimmer) trimmer.endTime = cutEnd;
+          }
+        }
+
+        cutStart = Math.max(0, Math.min(cutStart, loadedBuffer.duration - 0.05));
+        cutEnd = Math.min(loadedBuffer.duration, Math.max(cutEnd, cutStart + 0.05));
+
+        // Step 1: Slice trimmed region (potong audio secara presisi sesuai seleksi)
         const trimmedBuffer = window.FHAudioEngine.sliceAudioBuffer(
           loadedBuffer,
-          trimmer.startTime,
-          trimmer.endTime
+          cutStart,
+          cutEnd
         );
+
+        // Update in-memory sourceBuffer ke audio yang sudah terpotong
+        window.FHAudioEngine.sourceBuffer = trimmedBuffer;
 
         if (convertProgressFill) convertProgressFill.style.width = '35%';
         if (convertProgressStatus) convertProgressStatus.textContent = 'Mempercepat (Bypass) & menerapkan Limiter / Filter...';
@@ -832,8 +891,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Linear volume inverse compensation for Roblox sound object
         const robloxVolumeComp = (1 / Math.pow(10, ampDb / 20)).toFixed(2);
 
-        // Step 6: Save to History
+        // Step 6: Save to History with cut metadata
         const songTitle = window.FHAudioEngine.sourceFileName || 'FH Audio Track.mp3';
+        const isTrimmed = (cutEnd - cutStart) < (loadedBuffer.duration - 0.2) || cutStart > 0.1;
         const historyItem = window.FHStorage.addHistoryItem({
           title: songTitle,
           thumbnail: window.FHAudioEngine.sourceThumbnail || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop&q=60',
@@ -844,6 +904,10 @@ document.addEventListener('DOMContentLoaded', () => {
           robloxVolume: parseFloat(robloxVolumeComp),
           quality: quality,
           maxPartDuration: maxDurationSec,
+          cutStart: cutStart,
+          cutEnd: cutEnd,
+          cutDuration: cutEnd - cutStart,
+          isTrimmed: isTrimmed,
           parts: encodedParts
         });
 
@@ -852,22 +916,14 @@ document.addEventListener('DOMContentLoaded', () => {
           await window.FHStorage.savePartBlob(historyItem.id, i + 1, partBlobs[i]);
         }
 
-        // Save original trimmed blob for "Preview Real Song" in History
-        // Priority: pendingOriginalBlob = raw bytes from yt-dlp (guaranteed decodable)
-        // Fallback: WAV encode (pure JS, always valid) \u2014 NOT OGG WASM (can produce corrupt data)
+        // Simpan master audio TERPOTONG (trimmed) ke IndexedDB untuk Preview Real Song & Reconvert
+        // Menggunakan WAV encoder (pure client-side PCM, 100% selalu valid dan decodable)
         try {
-          const pendingBlob = window.FHAudioEngine.pendingOriginalBlob;
-          if (pendingBlob && pendingBlob.size > 1000) {
-            await window.FHStorage.saveOriginalBlob(historyItem.id, pendingBlob);
-            window.FHAudioEngine.sourceAudioBlob = pendingBlob;
-          } else {
-            // Local file: encode trimmed region to WAV (pure JS, never corrupt)
-            const origBlob = window.FHAudioEngine.encodeWav(trimmedBuffer);
-            await window.FHStorage.saveOriginalBlob(historyItem.id, origBlob);
-            window.FHAudioEngine.sourceAudioBlob = origBlob;
-          }
+          const trimmedMasterBlob = window.FHAudioEngine.encodeWav(trimmedBuffer);
+          await window.FHStorage.saveOriginalBlob(historyItem.id, trimmedMasterBlob);
+          window.FHAudioEngine.sourceAudioBlob = trimmedMasterBlob;
         } catch (e) {
-          console.warn('Could not save original blob:', e);
+          console.warn('Could not save original trimmed blob:', e);
         }
 
         lastRenderedResult = {
@@ -953,40 +1009,75 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Tombol Unduh MP3 Asli di Source Bar
+  // Tombol Unduh MP3 Asli / Master di Source Bar
   const btnDownloadSourceAudio = document.getElementById('btnDownloadSourceAudio');
   if (btnDownloadSourceAudio) {
     btnDownloadSourceAudio.addEventListener('click', async () => {
-      const origBlob = window.FHAudioEngine.pendingOriginalBlob || window.FHAudioEngine.sourceAudioBlob;
+      if (!loadedBuffer) {
+        window.showToast('Belum ada audio master yang dimuat.');
+        return;
+      }
+
+      let cutStart = (trimmer && typeof trimmer.startTime === 'number') ? trimmer.startTime : 0;
+      let cutEnd = (trimmer && typeof trimmer.endTime === 'number' && trimmer.endTime > 0) ? trimmer.endTime : loadedBuffer.duration;
+
+      if (inputStartTime && inputStartTime.value) {
+        const parsedStart = parseTimecode(inputStartTime.value);
+        if (Number.isFinite(parsedStart) && parsedStart >= 0) cutStart = parsedStart;
+      }
+      if (inputEndTime && inputEndTime.value) {
+        const parsedEnd = parseTimecode(inputEndTime.value);
+        if (Number.isFinite(parsedEnd) && parsedEnd > cutStart) cutEnd = parsedEnd;
+      }
+
+      const isTrimmed = (cutEnd - cutStart) < (loadedBuffer.duration - 0.2) || cutStart > 0.1;
       const title = window.FHAudioEngine.sourceFileName || (sourceTitle ? sourceTitle.textContent : 'audio');
       const cleanName = title.replace(/\.(mp3|wav|ogg|m4a)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 35);
 
-      if (origBlob && origBlob.size > 1000) {
-        const url = URL.createObjectURL(origBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${cleanName}_asli.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        const mb = (origBlob.size / (1024 * 1024)).toFixed(2);
-        window.showToast(`✓ Master MP3 Asli (${mb} MB) berhasil diunduh!`);
-      } else if (loadedBuffer && window.FHAudioEngine) {
-        window.showToast('Mengemas audio master...');
-        const wavBlob = window.FHAudioEngine.encodeWav(loadedBuffer);
+      if (isTrimmed) {
+        // Audio telah dipotong: unduh berkas WAV master terpotong berkualitas lossless
+        window.showToast('⏳ Mengemas audio master terpotong...');
+        const trimmedBuf = window.FHAudioEngine.sliceAudioBuffer(loadedBuffer, cutStart, cutEnd);
+        const wavBlob = window.FHAudioEngine.encodeWav(trimmedBuf);
         const url = URL.createObjectURL(wavBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${cleanName}_asli.wav`;
+        const startTag = trimmer ? trimmer.formatTime(cutStart).replace(':', 'm') : '0m0';
+        const endTag = trimmer ? trimmer.formatTime(cutEnd).replace(':', 's') : 'end';
+        a.download = `${cleanName}_cut_${startTag}_${endTag}.wav`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 2000);
         const mb = (wavBlob.size / (1024 * 1024)).toFixed(2);
-        window.showToast(`✓ Master Audio Asli (${mb} MB) berhasil diunduh!`);
+        window.showToast(`✓ Master Audio Terpotong (${mb} MB) berhasil diunduh!`);
       } else {
-        window.showToast('Belum ada audio master yang dimuat.');
+        // Audio belum dipotong: unduh berkas asli mentah (MP3 jika ada)
+        const origBlob = window.FHAudioEngine.pendingOriginalBlob || window.FHAudioEngine.sourceAudioBlob;
+        if (origBlob && origBlob.size > 1000) {
+          const url = URL.createObjectURL(origBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${cleanName}_asli.mp3`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          const mb = (origBlob.size / (1024 * 1024)).toFixed(2);
+          window.showToast(`✓ Master MP3 Asli (${mb} MB) berhasil diunduh!`);
+        } else {
+          const wavBlob = window.FHAudioEngine.encodeWav(loadedBuffer);
+          const url = URL.createObjectURL(wavBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${cleanName}_asli.wav`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          const mb = (wavBlob.size / (1024 * 1024)).toFixed(2);
+          window.showToast(`✓ Master Audio Asli (${mb} MB) berhasil diunduh!`);
+        }
       }
     });
   }
