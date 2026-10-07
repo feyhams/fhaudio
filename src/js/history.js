@@ -1604,6 +1604,113 @@ function initHistoryModule() {
     });
   }
 
+  // Direct Audio File Uploader to Roblox (for pre-converted OGG/MP3 files)
+  const btnHistoryDirectUpload = document.getElementById('btnHistoryDirectUpload');
+  const inputDirectUploadAudio = document.getElementById('inputDirectUploadAudio');
+  if (btnHistoryDirectUpload && inputDirectUploadAudio) {
+    btnHistoryDirectUpload.addEventListener('click', () => {
+      inputDirectUploadAudio.click();
+    });
+
+    inputDirectUploadAudio.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+
+      const activeAccount = window.FHStorage.getActiveAccount();
+      if (!activeAccount || !activeAccount.apiKey) {
+        alert('Silakan tambahkan atau aktifkan Akun Roblox API di menu Settings terlebih dahulu.');
+        window.switchTab('settings');
+        inputDirectUploadAudio.value = '';
+        return;
+      }
+
+      window.showToast(`Memproses ${files.length} berkas audio langsung ke Roblox...`);
+
+      for (let fIdx = 0; fIdx < files.length; fIdx++) {
+        const file = files[fIdx];
+        const rawName = file.name.replace(/\.(ogg|mp3|wav|m4a)$/i, '');
+
+        // Extract speed if filename already has pattern [Speed_2.3x_Roblox_0.435]
+        let speedVal = 2.3;
+        let robloxSpeedVal = 0.435;
+        const speedMatch = rawName.match(/\[Speed_([0-9.]+)x(?:_Roblox_([0-9.]+))?\]/i);
+        if (speedMatch) {
+          speedVal = parseFloat(speedMatch[1]) || 2.3;
+          robloxSpeedVal = speedMatch[2] ? parseFloat(speedMatch[2]) : parseFloat((1 / speedVal).toFixed(3));
+        }
+
+        // Clean song display title
+        const displayTitle = rawName.replace(/^part_\d+_/i, '').replace(/\[Speed_[^\]]+\]_?/i, '').replace(/_/g, ' ').trim() || rawName;
+
+        // Generate stealth scene & part alias
+        const sceneAlias = (window.FHAlias && typeof window.FHAlias.getRandomScene === 'function')
+          ? window.FHAlias.getRandomScene()
+          : 'Direct_BGM';
+        const alias = (window.FHAlias && typeof window.FHAlias.generatePartAlias === 'function')
+          ? window.FHAlias.generatePartAlias(sceneAlias, 1, 1, 'BGM')
+          : `BGM_${sceneAlias}_Part1`;
+
+        // Calculate duration via decode or fallback
+        let durationSec = 180;
+        try {
+          const ctx = getPreviewAudioCtx();
+          const arrayBuf = await file.arrayBuffer();
+          const audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
+          if (audioBuf && audioBuf.duration) {
+            durationSec = audioBuf.duration;
+          }
+        } catch (_) {
+          durationSec = Math.max(30, Math.min(420, Math.round(file.size / 15000)));
+        }
+
+        const m = Math.floor(durationSec / 60);
+        const s = Math.floor(durationSec % 60);
+        const durFormatted = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+        const historyItem = {
+          id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+          title: displayTitle,
+          sceneAlias: sceneAlias,
+          sourceUrl: '',
+          thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop&q=60',
+          timestamp: new Date().toLocaleString('id-ID'),
+          speed: speedVal,
+          robloxSpeed: robloxSpeedVal,
+          volumeDb: -4,
+          robloxVolume: 1.58,
+          quality: 5,
+          maxPartDuration: 250,
+          parts: [
+            {
+              partNum: 1,
+              duration: durFormatted,
+              durationSec: durationSec,
+              assetId: '',
+              viaAccount: activeAccount.name,
+              moderationStatus: 'reviewing',
+              robloxAlias: alias,
+              assetName: alias,
+              uploadStatus: 'uploading'
+            }
+          ]
+        };
+
+        // Save part & original blob so preview/download in history works 100%
+        await window.FHStorage.savePartBlob(historyItem.id, 1, file);
+        await window.FHStorage.saveOriginalBlob(historyItem.id, file);
+        window.FHStorage.addHistoryItem(historyItem);
+        renderHistoryDashboard();
+
+        // Immediately upload to Roblox Open Cloud
+        window.showToast(`Mengunggah [${fIdx + 1}/${files.length}] "${displayTitle}" ke Roblox...`);
+        await executeRobloxUpload(historyItem, 1, null);
+      }
+
+      inputDirectUploadAudio.value = '';
+      renderHistoryDashboard();
+    });
+  }
+
   // Initial render
   renderHistoryDashboard();
 

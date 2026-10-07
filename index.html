@@ -616,6 +616,11 @@ https://www.youtube.com/watch?v=71slUkcCMpY</textarea>
         <div class="history-header-row">
           <h2 class="history-page-title">Conversion History</h2>
           <div class="history-top-actions">
+            <button type="button" id="btnHistoryDirectUpload" class="btn-top-direct-upload" title="Unggah berkas audio (.ogg / .mp3) yang sudah jadi langsung ke Roblox Open Cloud tanpa re-convert">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span>+ Upload Audio (.ogg)</span>
+            </button>
+            <input type="file" id="inputDirectUploadAudio" accept=".ogg,.mp3,.wav" style="display: none;" multiple />
             <button type="button" id="btnHistoryCheckAll" class="btn-top-export btn-export-secondary" title="Sinkronkan status moderasi semua lagu langsung dengan database Roblox Open Cloud">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
               <span>Cek Status Roblox</span>
