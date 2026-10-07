@@ -489,12 +489,14 @@ function initHistoryModule() {
           const robloxSpeed = item.robloxSpeed || (1 / speedVal).toFixed(3);
           const fileName = `part_${part.partNum}_[Speed_${speedVal}x_Roblox_${robloxSpeed}]_${cleanName}.ogg`;
 
+          const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
+          a.href = url;
           a.download = fileName;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
 
           const sizeMB = (blob.size / 1024 / 1024).toFixed(2);
           window.showToast(`✓ Part ${part.partNum} (${sizeMB} MB) berhasil diunduh!`);

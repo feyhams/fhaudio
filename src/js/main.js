@@ -939,13 +939,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const robloxSpeed = (1 / parseFloat(speedVal)).toFixed(3);
       lastRenderedResult.blobs.forEach((blob, idx) => {
         const cleanName = (lastRenderedResult.historyItem.title || 'audio').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
+        a.href = url;
         // Format penamaan file OGG menyertakan nilai set speed-nya:
         a.download = `part_${idx + 1}_[Speed_${speedVal}x_Roblox_${robloxSpeed}]_${cleanName}.ogg`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
       });
       window.showToast('Berkas audio berhasil diunduh!');
     });
@@ -960,23 +962,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanName = title.replace(/\.(mp3|wav|ogg|m4a)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 35);
 
       if (origBlob && origBlob.size > 1000) {
+        const url = URL.createObjectURL(origBlob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(origBlob);
+        a.href = url;
         a.download = `${cleanName}_asli.mp3`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
         const mb = (origBlob.size / (1024 * 1024)).toFixed(2);
         window.showToast(`✓ Master MP3 Asli (${mb} MB) berhasil diunduh!`);
       } else if (loadedBuffer && window.FHAudioEngine) {
         window.showToast('Mengemas audio master...');
         const wavBlob = window.FHAudioEngine.encodeWav(loadedBuffer);
+        const url = URL.createObjectURL(wavBlob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(wavBlob);
+        a.href = url;
         a.download = `${cleanName}_asli.wav`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
         const mb = (wavBlob.size / (1024 * 1024)).toFixed(2);
         window.showToast(`✓ Master Audio Asli (${mb} MB) berhasil diunduh!`);
       } else {
